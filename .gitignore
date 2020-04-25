@@ -45,3 +45,6 @@ yarn-error.log*
 /.changelog
 .npm/
 yarn.lock
+
+# Ignore environment files for debug
+*.env
