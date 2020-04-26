@@ -1,5 +1,7 @@
 const express = require("express");
 const { MongoClient } = require("mongodb");
+const mongoose = require("mongoose");
+const bodyParser = require("body-parser");
 
 if (process.env.NODE_ENV !== "production") {
   require("dotenv").config();
@@ -12,18 +14,9 @@ const PORT = process.env.PORT || 4000;
 main();
 
 async function main() {
-  const mongoClient = await MongoClient.connect(MONGODB_URI, {
-    useNewUrlParser: true,
-  });
-
-  const db = mongoClient.db(MONGODB_DB);
+  await mongoose.connect(MONGODB_URI, { useNewUrlParser: true });
 
   const app = express();
-  // Attach mongo db
-  app.use(function attachDb(req, res, next) {
-    req.db = db;
-    next();
-  });
 
   // Set up swagger for api documentation
   const expressSwagger = require("express-swagger-generator")(app);
@@ -34,16 +27,19 @@ async function main() {
         title: "API for flat-app",
         version: "1.0.0",
       },
-      host: "localhost:3000",
+      host: "localhost:4000",
       basePath: "/",
       produces: ["application/json"],
       schemes: ["http"],
     },
     basedir: __dirname,
-    files: ["./routes/**/*.js"],
+    files: ["./routes/**/*.js", "./models/**/*.js"],
   };
 
   expressSwagger(options);
+
+  // Set up request body to be parsed nicely
+  app.use(bodyParser.json())
 
   // Default forward to swagger docs page
   app.get("/", (req, res) => {
