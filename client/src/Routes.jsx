@@ -16,7 +16,11 @@ class PageRoutes extends React.Component {
     
     render() {
         return (
-            <div>
+            <div style={{ 
+                minWidth: '350px', 
+                width: '50%', 
+                margin: 'auto'
+            }}>
                 <Route exact path='/' component={PageDashboard}/>
                 <Route exact path='/login' component={PageLogin}/>
                 <Route exact path='/create-bill' component={PageCreateBill}/>
