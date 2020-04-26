@@ -16,12 +16,20 @@ class PageDashboard extends React.Component {
             
         }
     }
+
+    handleRequestSort = (event, property) => {
+        console.log(event);
+        console.log(property);
+    };
     
     render() {
         return (   
             <div>
                 <BillsTable 
                     columns={columns}
+                    requestSort={(event, property) => this.handleRequestSort(event, property)}
+                    defaultOrderBy='Date'
+                    defaultOrder='desc'
                 />
             </div>
         )

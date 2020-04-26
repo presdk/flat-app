@@ -13,9 +13,13 @@ class BillsTable extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
-            orderBy: null,
-            order: null
+            orderBy: this.props.defaultOrderBy,
+            order: this.props.defaultOrder
         }
+    }
+
+    createSortHandler = (property) => (event) => {
+        this.props.requestSort(event, property);
     }
 
     columnNames = () => {
@@ -29,14 +33,9 @@ class BillsTable extends React.Component {
                     <TableSortLabel
                         active={this.state.orderBy === column.name}
                         direction={this.state.orderBy === column.name ? this.state.order : 'desc'}
-                        // onClick={createSortHandler(column.name)}
+                        onClick={this.createSortHandler(column.name)}
                     >
                         {column.name}
-                        {this.state.orderBy === column.name ? (
-                            <span>
-                                {this.state.order === 'desc' ? 'sorted descending' : 'sorted ascending'}
-                            </span>
-                        ) : null}
                     </TableSortLabel>
                 </TableCell>
             )
