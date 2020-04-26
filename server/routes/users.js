@@ -36,8 +36,8 @@ router.get("/:userId/", async (req, res) => {
 /**
  * @route POST /users/add
  * @group Users
- * @param {string} name.string - the user's name
- * @param {string} email_address.string - the user's email
+ * @param {string} name.string.required - the user's name
+ * @param {string} email_address.string.required - the user's email
  * @returns {User.model} 200 - The user
  * @returns {object} 500 - Error
  */
@@ -77,7 +77,6 @@ router.post("/:userId/update", async (req, res) => {
 /**
  * @route POST /users/userId/delete
  * @group Users
- * @param {string} _id.string - the user's id
  * @returns {object} 200 - Success
  * @returns {object} 500 - Error
  */
