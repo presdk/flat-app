@@ -3,9 +3,9 @@
 ### Set up mongo database ###
 Run the commands:
 
-`docker pull mongo`
+`docker pull bitnami/mongodb`
 
-`docker run -d -p 27017:27107 --name mongodb mongo -v /data/db:/data/db`
+`docker run -d --name <name> bitnami/mongodb`
 
 ### Add the env file ###
 Add a .env file in `/server/` with the following content:
@@ -13,7 +13,7 @@ Add a .env file in `/server/` with the following content:
 ```
 NODE_ENV=debug
 PORT=4000
-MONGODB_URI=mongodb://localhost:27017
+MONGODB_URI=mongodb://127.0.0.1:27017
 MONGODB_DB=flat-app
 ```
 
@@ -27,5 +27,5 @@ Run the commands
 View the APIs by accessing `localhost:4000/`
 
 ## Viewing the database ##
-1. Install MongoDB Compass Community [https://www.mongodb.com/download-center/community]
-2. Connect to 0.0.0.0:27017
+1. Install MongoDB Compass Community [https://www.mongodb.com/download-center/compass]
+2. Connect to 127.0.0.1:27017
