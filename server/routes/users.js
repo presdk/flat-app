@@ -34,14 +34,14 @@ router.get("/:userId/", async (req, res) => {
 });
 
 /**
- * @route POST /users/
+ * @route POST /users/add
  * @group Users
  * @param {string} name.string - the user's name
  * @param {string} email_address.string - the user's email
  * @returns {User.model} 200 - The user
  * @returns {object} 500 - Error
  */
-router.post("/", async (req, res) => {
+router.post("/add", async (req, res) => {
   const newEntry = req.body;
 
   await User.create(newEntry, (e, newEntry) => {
