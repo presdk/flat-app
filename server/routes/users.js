@@ -24,7 +24,7 @@ router.get("/", async (req, res) => {
  * @returns {User.model} 200 - A user
  */
 router.get("/:userId/", async (req, res) => {
-  await User.findById(req.params,userId, (err, user) => {
+  await User.findById(req.params.userId, (err, user) => {
     if (err) {
       res.send();
     } else {
