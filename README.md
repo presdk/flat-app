@@ -7,6 +7,16 @@ Run the commands:
 
 `docker run -d -p 27017:27107 --name mongodb mongo -v /data/db:/data/db`
 
+### Add the env file ###
+Add a .env file in `/server/` with the following content:
+
+```
+NODE_ENV=debug
+PORT=4000
+MONGODB_URI=mongodb://localhost:27017
+MONGODB_DB=flat-app
+```
+
 ### Start the server ###
 Run the commands
 
