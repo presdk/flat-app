@@ -2,7 +2,7 @@ const mongoose = require("mongoose");
 
 const Schema = mongoose.Schema;
 const File = require("./File");
-const Payment = require("./Payment");
+const BillPayment = require("./Payment");
 
 /**
  * @typedef Bill
@@ -12,7 +12,7 @@ const Payment = require("./Payment");
  * @property {string} reference_name - The  reference name to use for the payment of this bill
  * @property {Boolean} is_deleted - True if the bill has been deleted
  * @property {Array.<File>} files - Files attached to the bill
- * @property {Array.<Payment>} payments - The payment requests issued from this bill
+ * @property {Array.<BillPayment>} payments - The payment requests issued from this bill
  */
 const BillSchema = new Schema({
   date: { type: Date, required: true },
@@ -21,7 +21,7 @@ const BillSchema = new Schema({
   reference_name: { type: String },
   is_deleted: { type: Boolean, default: true },
   files: [File],
-  payments: [Payment],
+  payments: [BillPayment],
 });
 
 const BillType = Object.freeze({
