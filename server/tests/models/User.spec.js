@@ -14,6 +14,6 @@ describe("User model", () => {
   it("create user sets default deleted flag", () => {
     const user = User({});
 
-    assert(true, user.is_deleted);
+    assert.equal(false, user.is_deleted);
   });
 });

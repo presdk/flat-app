@@ -1,6 +1,6 @@
 const express = require("express");
 const router = express.Router();
-const User = require("../models/User");
+const { User } = require("../models/User");
 
 /**
  * @route GET /users
@@ -43,15 +43,41 @@ router.get("/:userId/", async (req, res) => {
  */
 router.post("/add", async (req, res) => {
   const newEntry = req.body;
+  const { name, email_address } = newEntry;
 
-  await User.create(newEntry, (e, newEntry) => {
-    if (e) {
-      console.log(e);
-      res.sendStatus(500);
-    } else {
-      res.send(newEntry);
+  await User.find(
+    {
+      $or: [{ name: name }, { email_address: email_address }],
+    },
+    (err, users) => {
+      if (err) {
+        throw err;
+      } else {
+        return users;
+      }
     }
-  });
+  )
+    .then((users) => {
+      if (users.length > 0) {
+        res.status(500).send("User already exists");
+      } else {
+        return User.create(newEntry, (e, newEntry) => {
+          if (e) {
+            console.log(e);
+            throw e;
+          } else {
+            return newEntry;
+          }
+        });
+      }
+    })
+    .then((newEntry) => {
+      res.send(newEntry);
+    })
+    .catch((err) => {
+      console.log(err);
+      res.sendStatus(500);
+    });
 });
 
 /**
@@ -65,13 +91,17 @@ router.post("/add", async (req, res) => {
 router.post("/:userId/update", async (req, res) => {
   const changedEntry = req.body;
 
-  await User.update({ _id: req.params.userId }, { $set: changedEntry }, (err) => {
-    if (err) {
-      res.sendStatus(500);
-    } else {
-      res.sendStatus(200);
+  await User.update(
+    { _id: req.params.userId },
+    { $set: changedEntry },
+    (err) => {
+      if (err) {
+        res.sendStatus(500);
+      } else {
+        res.sendStatus(200);
+      }
     }
-  });
+  );
 });
 
 /**
@@ -81,14 +111,14 @@ router.post("/:userId/update", async (req, res) => {
  * @returns {object} 500 - Error
  */
 router.post("/:userId/delete", async (req, res) => {
-    console.log(req.params.userId);
-    await User.deleteOne({ _id: req.params.userId }, (err) => {
-      if (err) {
-        res.sendStatus(500);
-      } else {
-        res.sendStatus(200);
-      }
-    });
+  console.log(req.params.userId);
+  await User.deleteOne({ _id: req.params.userId }, (err) => {
+    if (err) {
+      res.sendStatus(500);
+    } else {
+      res.sendStatus(200);
+    }
   });
+});
 
 module.exports = router;

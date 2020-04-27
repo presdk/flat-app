@@ -10,19 +10,19 @@ const PaymentStatus = Object.freeze({
 
 /**
  * @typedef BillPayment
- * @property {User.model} user.required - The user that the payment was issued to
- * @property {String} status.required - The status of the payment: `unpaid` or `marked` or `paid`
+ * @property {String} userId.required - The id of the user that the payment was issued to
+ * @property {String} status - The status of the payment: `unpaid` or `marked` or `paid`
  * @property {Number} usage_in_days.required - The bill usage in days between `0` and `31` inclusive
  * @property {Number} payable_amount.required - The payable amount for this user in dollars
  */
 const BillPaymentSchema = new Schema({
-  user: { type: UserSchema, required: true },
+  userId: { type: String, required: true },
   status: {
     type: String,
     default: PaymentStatus.Unpaid,
     enum: Object.values(PaymentStatus),
   },
-  usage_in_days: { type: Number, required: true },
+  usage_in_days: { type: Number, required: true,  },
   payable_amount: { type: Number, required: true },
 });
 

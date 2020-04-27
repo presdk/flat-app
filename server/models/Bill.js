@@ -38,7 +38,7 @@ const BillSchema = new Schema({
     min: [0, "Amount must be a positive number"],
   },
   reference_name: String,
-  is_deleted: { type: Boolean, default: true },
+  is_deleted: { type: Boolean, default: false },
   files: [FileSchema],
   payments: [BillPaymentSchema],
 });

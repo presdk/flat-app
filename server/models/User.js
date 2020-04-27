@@ -14,7 +14,14 @@ const UserSchema = new Schema({
   is_deleted: { type: Boolean, default: false },
 });
 
+// Returns a list of active users
+UserSchema.statics.getActiveUsers = async () => {
+  return User.find({ is_deleted: false });
+};
+
+const User = mongoose.model("User", UserSchema);
+
 module.exports = {
-  User: mongoose.model('User', UserSchema),
-  UserSchema: UserSchema
-}
+  User: User,
+  UserSchema: UserSchema,
+};

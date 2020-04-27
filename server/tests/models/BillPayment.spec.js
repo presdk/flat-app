@@ -6,7 +6,7 @@ describe("Bill payment model", () => {
     const billPayment = BillPayment({});
 
     billPayment.validate((err) => {
-      assert(err.errors.user);
+      assert(err.errors.userId);
       assert(err.errors.usage_in_days);
       assert(err.errors.payable_amount);
     });

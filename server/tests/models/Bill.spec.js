@@ -15,7 +15,7 @@ describe("Bill model", () => {
   it("create bill sets default deleted flag", () => {
     const bill = Bill();
 
-    assert(bill.is_deleted);
+    assert.equal(false, bill.is_deleted);
   });
 
   it("create bill has default empty files and payments", () => {

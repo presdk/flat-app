@@ -39,7 +39,7 @@ async function main() {
   expressSwagger(options);
 
   // Set up request body to be parsed nicely
-  app.use(bodyParser.json())
+  app.use(bodyParser.json());
 
   // Default forward to swagger docs page
   app.get("/", (req, res) => {
@@ -50,6 +50,10 @@ async function main() {
   // Users route
   const users = require("./routes/users");
   app.use("/users", users);
+
+  // Bills route
+  const bills = require("./routes/bills");
+  app.use("/bills", bills);
 
   app.listen(PORT, (err) => {
     if (err) {
