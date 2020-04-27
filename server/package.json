@@ -12,6 +12,7 @@
   },
   "devDependencies": {
     "chai": "^4.2.0",
+    "cors": "^2.8.5",
     "express-swagger-generator": "^1.1.17",
     "mocha": "^7.1.2",
     "nodemon": "^2.0.3"

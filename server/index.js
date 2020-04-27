@@ -1,7 +1,7 @@
 const express = require("express");
-const { MongoClient } = require("mongodb");
 const mongoose = require("mongoose");
 const bodyParser = require("body-parser");
+const cors = require('cors');
 
 if (process.env.NODE_ENV !== "production") {
   require("dotenv").config();
@@ -37,6 +37,9 @@ async function main() {
   };
 
   expressSwagger(options);
+
+  // Enable CORS
+  app.use(cors())
 
   // Set up request body to be parsed nicely
   app.use(bodyParser.json());
