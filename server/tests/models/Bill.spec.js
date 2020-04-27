@@ -77,4 +77,12 @@ describe("Bill model", () => {
     assert(1, bill.payments[1].userId);
     assert(1, bill.payments[1].usage_in_days);
   });
+
+  it("create bill generates reference", () => {
+    const billPayment = Bill({ type: BillType.Water, date: "01-01-20" });
+
+    billPayment.generateReference();
+
+    assert.equal("water-01-01-20", billPayment.reference_name);
+  });
 });

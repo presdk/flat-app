@@ -57,8 +57,14 @@ BillSchema.methods.calculatePayments = function () {
   });
 };
 
-BillSchema.pre("validate", function () {
+// Generates the reference using the date and type
+BillSchema.methods.generateReference = function () {
+  this.reference_name = this.type + "-" + this.date;
+};
+
+BillSchema.post("validate", function () {
   this.calculatePayments();
+  this.generateReference();
 });
 
 module.exports = {

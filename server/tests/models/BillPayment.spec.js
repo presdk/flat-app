@@ -3,7 +3,7 @@ const { BillPayment, PaymentStatus } = require("../../models/BillPayment");
 
 describe("Bill payment model", () => {
   it("create bill payment has errors without req fields", () => {
-    const billPayment = BillPayment({});
+    const billPayment = BillPayment();
 
     billPayment.validate((err) => {
       assert(err.errors.userId);
@@ -13,7 +13,7 @@ describe("Bill payment model", () => {
   });
 
   it("create bill payment sets default status", () => {
-    const billPayment = BillPayment({});
+    const billPayment = BillPayment();
     
     assert(PaymentStatus.Unpaid, billPayment.status);
   });
