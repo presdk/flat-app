@@ -19,21 +19,26 @@ class BillsTable extends React.Component {
     }
 
     createSortHandler = (property) => (event) => {
-        this.props.requestSort(event, property);
+        this.sorterMethod = this.props.requestDescSort(event, property);
+        if (property !== this.state.orderBy) {
+            this.setState({ orderBy: property, order: 'desc' })
+        } else {
+            this.setState({ order: (this.state.order === 'asc') ? 'desc' : 'asc' })
+        }
     }
 
     columnNames = () => {
         return this.props.columns.map(column => {
             return (
                 <TableCell  
-                    key={column.name}
+                    key={column.key}
                     align={column.align}
-                    sortDirection={this.state.orderBy === column.name ? this.state.order : false}
+                    sortDirection={this.state.orderBy === column.key ? this.state.order : false}
                 >
                     <TableSortLabel
-                        active={this.state.orderBy === column.name}
-                        direction={this.state.orderBy === column.name ? this.state.order : 'desc'}
-                        onClick={this.createSortHandler(column.name)}
+                        active={this.state.orderBy === column.key}
+                        direction={this.state.orderBy === column.key ? this.state.order : 'desc'}
+                        onClick={this.createSortHandler(column.key)}
                     >
                         {column.name}
                     </TableSortLabel>
@@ -42,8 +47,33 @@ class BillsTable extends React.Component {
         })
     }
 
+    ascSorter = (a, b) => {
+        return -this.sorterMethod(a, b)
+    }
+
     tableData = () => {
-        return null
+        if (this.props.data) {
+            const cpData = [...this.props.data]
+            if (this.sorterMethod) {
+                (this.state.order === 'desc') ? cpData.sort(this.sorterMethod) : cpData.sort(this.ascSorter)
+            }
+            return cpData.map(entry => {
+                return (
+                    <TableRow>
+                        {this.props.columns.map(cell => {
+                            return (
+                                <TableCell
+                                    key={cell.key}
+                                    align={cell.align}
+                                >
+                                    {entry[cell.key]}
+                                </TableCell>
+                            )
+                        })}
+                    </TableRow>
+                )
+            })
+        }
     }
 
     render() {
