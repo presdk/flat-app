@@ -48,40 +48,81 @@ router.get("/:billId/", async (req, res) => {
  */
 router.post("/add", async (req, res) => {
   try {
-    await User.getActiveUsers()
-      .then((users) => {
-        if (users.length <= 0) {
-          throw Error("No users exist to create the bill");
+    const activeUsers = await User.getActiveUsers();
+
+    if (activeUsers.length <= 0) {
+      throw Error("No users exist to create the bill");
+    }
+
+    const newEntry = req.body;
+    const bill = Bill(newEntry);
+
+    // Add bill payments for each active user
+    activeUsers.forEach((user) => {
+      const payment = BillPayment({
+        userId: user._id,
+        usage_in_days: 31,
+        payable_amount: 0,
+      });
+
+      bill.payments.push(payment);
+    });
+
+    bill
+      .save()
+      .then(() => {
+        res.send(bill);
+      })
+      .catch((err) => {
+        res.status(500).send(err);
+      });
+  } catch (err) {
+    console.log(err);
+    res.status(500).send(err);
+  }
+});
+
+/**
+ * @route POST /bills/billId/userId/update
+ * @group Bills
+ * @param {String} status.required - The status of the payment: `unpaid` or `marked` or `paid`
+ * @param {Number} usage_in_days - The bill usage in days between `0` and `31` inclusive
+ * @returns {Bill.model} 200 - A bill
+ * @returns {object} 500 - Error
+ */
+router.post("/:billId/:userId/update", async (req, res) => {
+  const { billId, userId } = req.params;
+  const { status, usage_in_days } = req.body;
+
+  try {
+    await Bill.findById(billId, (err, bill) => {
+      if (err) {
+        console.log(err);
+        res.sendStatus(500);
+      } else {
+        const payment = bill.payments.find((p) => p.userId == userId);
+        if (!payment) {
+          res.status(500).send(`User id: ${userId} was not found from bill`);
         } else {
-          return users;
-        }
-      })
-      .then((users) => {
-        const newEntry = req.body;
-
-        const bill = Bill(newEntry);
-        const numUsers = users.length;
-        const amountPerUser = newEntry.total_amount / numUsers;
-
-        // Add bill payments for each active user
-        users.forEach((user) => {
-          const payment = BillPayment({
-            userId: user._id,
-            usage_in_days: 31,
-            payable_amount: amountPerUser,
-          });
-
-          bill.payments.push(payment);
-        });
-
-        bill.save((err, bill) => {
-          if (err) {
-            res.status(500).send(err);
-          } else {
-            res.send(bill);
+          if (usage_in_days) {
+            payment.usage_in_days = usage_in_days;
           }
-        });
-      })
+
+          if (status) {
+            payment.status = status;
+          }
+
+          bill
+            .save()
+            .then(() => {
+              res.send(bill);
+            })
+            .catch((err) => {
+              res.status(500).send(err);
+            });
+        }
+      }
+    });
   } catch (err) {
     console.log(err);
     res.status(500).send(err);

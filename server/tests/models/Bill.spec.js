@@ -57,4 +57,24 @@ describe("Bill model", () => {
       });
     });
   });
+
+  it("bill create payments creates correct payments", () => {
+    const bill = Bill({ total_amount: 100 });
+    const paymentInfo1 = { userId: 1, usage_in_days: 1, payable_amount: 0 };
+    const paymentInfo2 = { userId: 2, usage_in_days: 1, payable_amount: 0 };
+    bill.payments.push(paymentInfo1);
+    bill.payments.push(paymentInfo2);
+
+    bill.calculatePayments([paymentInfo1, paymentInfo2]);
+
+    assert(2, bill.payments.length);
+
+    assert(50, bill.payments[0].payable_amount);
+    assert(1, bill.payments[0].userId);
+    assert(1, bill.payments[0].usage_in_days);
+
+    assert(50, bill.payments[1].payable_amount);
+    assert(1, bill.payments[1].userId);
+    assert(1, bill.payments[1].usage_in_days);
+  });
 });

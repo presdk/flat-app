@@ -22,7 +22,7 @@ const BillPaymentSchema = new Schema({
     default: PaymentStatus.Unpaid,
     enum: Object.values(PaymentStatus),
   },
-  usage_in_days: { type: Number, required: true,  },
+  usage_in_days: { type: Number, required: true, min: [0, "Days must be a positive number"]  },
   payable_amount: { type: Number, required: true },
 });
 
