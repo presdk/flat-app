@@ -2,7 +2,7 @@ const mongoose = require("mongoose");
 
 const Schema = mongoose.Schema;
 const { FileSchema } = require("./File");
-const { BillPaymentSchema } = require("./BillPayment");
+const { BillPaymentSchema, BillPayment } = require("./BillPayment");
 
 const BillType = Object.freeze({
   Water: "water",
@@ -41,6 +41,30 @@ const BillSchema = new Schema({
   is_deleted: { type: Boolean, default: false },
   files: [FileSchema],
   payments: [BillPaymentSchema],
+});
+
+// Update the list of payments with the latest calculation
+BillSchema.methods.calculatePayments = function () {
+  const totalUsageInDays = this.payments
+    .map((p) => p.usage_in_days)
+    .reduce((a, b) => a + b);
+
+  this.payments.forEach((p) => {
+    const { usage_in_days } = p;
+
+    const amountToPay = this.total_amount * (usage_in_days / totalUsageInDays);
+    p.payable_amount = amountToPay;
+  });
+};
+
+// Generates the reference using the date and type
+BillSchema.methods.generateReference = function () {
+  this.reference_name = this.type + "-" + this.date;
+};
+
+BillSchema.post("validate", function () {
+  this.calculatePayments();
+  this.generateReference();
 });
 
 module.exports = {
