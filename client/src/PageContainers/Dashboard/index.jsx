@@ -50,12 +50,17 @@ function sortByType(a, b) {
 }
 
 function sortByStatus(a, b) {
-    if (a['payment']['status'] > b['payment']['status']) {
+    if (a['status'] > b['status']) {
         return -1
     } else if (a['status'] < b['status']) {
         return 1
     } else {
-        return sortByType(a, b)
+        const prelim = sortByDate(a, b);
+        if (prelim === 0) {
+            return sortByType(a, b)
+        } else {
+            return prelim
+        }
     }
 }
 
@@ -81,9 +86,19 @@ class PageDashboard extends React.Component {
     };
 
     componentDidMount() {
-        axios.get('localhost:4000/bills').then(res => {
-            console.log('something')
-            console.log(res.data);
+        // TEMP
+        const userID = "5ea694e25f7777161cfe2832";
+
+        axios.get('http://localhost:4000/bills').then(res => {
+            res.data.forEach(item => {
+                var status = "unfound";
+                item.payments.forEach(userItem => {
+                    if (userItem.userId === userID) {
+                        status = userItem.status;
+                    }
+                });
+                item.status = status;
+            });
             this.setState({data: res.data});
         })
     }
@@ -93,17 +108,7 @@ class PageDashboard extends React.Component {
             <div>
                 <BillsTable 
                     columns={columns}
-                    data={[
-                        {
-                            date: '01-01-19', type: 'water', status: 'paid'
-                        },{
-                            date: '01-01-20', type: 'internet', status: 'unpaid'
-                        },{
-                            date: '01-02-19', type: 'power', status: 'marked'
-                        },{
-                            date: '02-01-19', type: 'water', status: 'paid'
-                        }
-                    ]}
+                    data={this.state.data}
                     requestDescSort={(event, property) => this.handleRequestSort(event, property)}
                     // defaultOrderBy='date'
                     // defaultOrder='desc'

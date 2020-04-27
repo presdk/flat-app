@@ -59,7 +59,7 @@ class BillsTable extends React.Component {
             }
             return cpData.map(entry => {
                 return (
-                    <TableRow>
+                    <TableRow key={entry._id}>
                         {this.props.columns.map(cell => {
                             return (
                                 <TableCell
