@@ -1,6 +1,12 @@
 const mongoose = require("mongoose");
-const User = require("./User");
+const { UserSchema } = require("./User");
 const Schema = mongoose.Schema;
+
+const PaymentStatus = Object.freeze({
+  Unpaid: "unpaid",
+  MarkedAsPaid: "marked",
+  Paid: "paid",
+});
 
 /**
  * @typedef BillPayment
@@ -10,20 +16,18 @@ const Schema = mongoose.Schema;
  * @property {Number} payable_amount.required - The payable amount for this user in dollars
  */
 const BillPaymentSchema = new Schema({
-  user: { type: User, required: true },
+  user: { type: UserSchema, required: true },
   status: {
     type: String,
-    default: PaymentStatus.UnPaid,
+    default: PaymentStatus.Unpaid,
     enum: Object.values(PaymentStatus),
   },
   usage_in_days: { type: Number, required: true },
-  payable_amount: Number,
+  payable_amount: { type: Number, required: true },
 });
 
-const PaymentStatus = Object.freeze({
-  UnPaid: "unpaid",
-  MarkedAsPaid: "marked",
-  Paid: "paid",
-});
-
-module.exports = mongoose.model("BillPayment", BillPaymentSchema);
+module.exports = {
+  PaymentStatus: PaymentStatus,
+  BillPayment: mongoose.model("BillPayment", BillPaymentSchema),
+  BillPaymentSchema: BillPaymentSchema,
+};
