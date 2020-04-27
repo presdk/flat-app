@@ -8,8 +8,11 @@ const Schema = mongoose.Schema;
  * @property {String} url.required - The url of the document
  */
 const FileSchema = new Schema({
-    date: {type: Date, required: true},
-    url: {type: String, required: true}
+  date: { type: Date, required: true },
+  url: { type: String, required: true },
 });
 
-module.exports = mongoose.model('File', FileSchema);
+module.exports = {
+  File: mongoose.model("File", FileSchema),
+  FileSchema: FileSchema,
+};
