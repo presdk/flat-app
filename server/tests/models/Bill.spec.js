@@ -9,17 +9,16 @@ describe("Bill model", () => {
       assert(err.errors.date);
       assert(err.errors.type);
       assert(err.errors.total_amount);
-      assert(err.errors.reference_name);
     });
   });
 
   it("create bill sets default deleted flag", () => {
-      const bill = Bill();
+    const bill = Bill();
 
-      assert(bill.is_deleted);
+    assert(bill.is_deleted);
   });
 
-  it("create bill has default files and payments", () => {
+  it("create bill has default empty files and payments", () => {
     const bill = Bill();
 
     assert(bill.files != null);
@@ -29,12 +28,33 @@ describe("Bill model", () => {
     assert(bill.payments.length == 0);
   });
 
-  it("create bill has errors with negative total amount", () => {
+  it("create bill has errors when negative total amount", () => {
     const bill = Bill({ total_amount: -1 });
 
     bill.validate((err) => {
       assert(err.errors.total_amount);
-      assert.equal("Amount must be a positive number", err.errors.total_amount.message);
+      assert.equal(
+        "Amount must be a positive number",
+        err.errors.total_amount.message
+      );
+    });
+  });
+
+  it("create bill validates date format", () => {
+    const testCases = [
+      { date: "01/01/20", isValid: false },
+      { date: "1 January 2020", isValid: false },
+      { date: "1-1-20", isValid: false },
+      { date: "--------", isValid: false },
+      { date: "01-01-20", isValid: true },
+    ];
+
+    testCases.forEach((tc) => {
+      const { date, isValid } = tc;
+      const bill = Bill({ date: date });
+      bill.validate((err) => {
+        assert.equal(isValid, err.errors.date == null);
+      });
     });
   });
 });
