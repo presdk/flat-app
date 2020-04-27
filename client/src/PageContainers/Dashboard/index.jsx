@@ -1,4 +1,5 @@
 import React from 'react';
+import axios from 'axios';
 
 import BillsTable from '../../Components/table';
 
@@ -49,7 +50,7 @@ function sortByType(a, b) {
 }
 
 function sortByStatus(a, b) {
-    if (a['status'] > b['status']) {
+    if (a['payment']['status'] > b['payment']['status']) {
         return -1
     } else if (a['status'] < b['status']) {
         return 1
@@ -62,7 +63,7 @@ class PageDashboard extends React.Component {
     constructor(props) {
         super(props);
         this.state={
-            
+            data: []
         }
     }
 
@@ -78,6 +79,14 @@ class PageDashboard extends React.Component {
                 return sortByDate
         }
     };
+
+    componentDidMount() {
+        axios.get('localhost:4000/bills').then(res => {
+            console.log('something')
+            console.log(res.data);
+            this.setState({data: res.data});
+        })
+    }
     
     render() {
         return (   
