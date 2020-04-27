@@ -1,6 +1,6 @@
-const express = require("express");
+import express = require("express");
+import User = require("../models/User");
 const router = express.Router();
-const User = require("../models/User");
 
 /**
  * @route GET /users

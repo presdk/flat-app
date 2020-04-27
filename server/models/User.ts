@@ -1,6 +1,10 @@
-const mongoose = require("mongoose");
+import mongoose, { Schema, Document} from "mongoose"
 
-const Schema = mongoose.Schema;
+export interface IUser extends Document {
+  name: string,
+  email_address: string,
+  is_deleted: boolean
+};
 
 /**
  * @typedef User
@@ -8,10 +12,10 @@ const Schema = mongoose.Schema;
  * @property {string} email_address.required - The email address
  * @property {Boolean} is_deleted - True if the user has been deleted
  */
-const UserSchema = new Schema({
+const UserSchema: Schema = new Schema({
   name: { type: String, required: true },
   email_address: { type: String, required: true },
   is_deleted: { type: Boolean, default: false },
 });
 
-module.exports = mongoose.model('User', UserSchema);
+export default mongoose.model<IUser>('User', UserSchema);

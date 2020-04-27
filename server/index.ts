@@ -1,7 +1,6 @@
-const express = require("express");
-const { MongoClient } = require("mongodb");
-const mongoose = require("mongoose");
-const bodyParser = require("body-parser");
+import express = require("express");
+import mongoose = require("mongoose");
+import bodyParser = require("body-parser");
 
 if (process.env.NODE_ENV !== "production") {
   require("dotenv").config();
@@ -20,7 +19,7 @@ async function main() {
 
   // Set up swagger for api documentation
   const expressSwagger = require("express-swagger-generator")(app);
-  let options = {
+  const options = {
     swaggerDefinition: {
       info: {
         description: "Server for flat-app",
