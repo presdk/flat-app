@@ -24,13 +24,13 @@ router.get("/", async (req, res) => {
  * @returns {User.model} 200 - A user
  */
 router.get("/:userId/", async (req, res) => {
-  await User.findById(req.params.userId, (err, user) => {
-    if (err) {
-      res.send();
-    } else {
-      return JSON.stringify(user);
-    }
-  });
+  try {
+    const user = await User.findById(req.params.userId).exec();
+    res.send(user);
+  } catch (err) {
+    console.log(err);
+    res.status(500).send(err);
+  }
 });
 
 /**
@@ -77,17 +77,18 @@ router.post("/add", async (req, res) => {
 router.post("/:userId/update", async (req, res) => {
   const changedEntry = req.body;
 
-  await User.update(
-    { _id: req.params.userId },
-    { $set: changedEntry },
-    (err) => {
-      if (err) {
-        res.sendStatus(500);
-      } else {
-        res.sendStatus(200);
-      }
-    }
-  );
+  try {
+    const user = await User.findOneAndUpdate(
+      { _id: req.params.userId },
+      changedEntry,
+      { new: true }
+    );
+
+    res.send(user);
+  } catch (err) {
+    console.log(err);
+    res.status(500).send(err);
+  }
 });
 
 /**
@@ -98,13 +99,13 @@ router.post("/:userId/update", async (req, res) => {
  */
 router.post("/:userId/delete", async (req, res) => {
   console.log(req.params.userId);
-  await User.deleteOne({ _id: req.params.userId }, (err) => {
-    if (err) {
-      res.sendStatus(500);
-    } else {
-      res.sendStatus(200);
-    }
-  });
+  try {
+    await User.deleteOne({ _id: req.params.userId }).exec();
+    res.sendStatus(200);
+  } catch (err) {
+    console.log(err);
+    res.status(500).send(err);
+  }
 });
 
 module.exports = router;
