@@ -17,7 +17,7 @@ class Header extends React.Component {
             <AppBar position="static" style={{ marginBottom: '8px' }}>
                 <Toolbar>
                     <Typography variant="h6">
-                        Bills Splitter {this.props.user ? this.props.user.name : null}
+                        Bills Splitter {this.props.user ? `> ${this.props.user.name}` : null}
                     </Typography>
                 </Toolbar>
             </AppBar>

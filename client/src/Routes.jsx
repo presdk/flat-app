@@ -1,5 +1,8 @@
 import React from 'react';
-import { Route } from 'react-router-dom';
+import { Redirect, Route } from 'react-router-dom';
+import { connect } from 'react-redux';
+
+import * as selectors from './redux/selectors';
 
 import PageDashboard from './PageContainers/Dashboard';
 import PageLogin from './PageContainers/Login';
@@ -21,6 +24,7 @@ class PageRoutes extends React.Component {
                 width: '50%', 
                 margin: 'auto'
             }}>
+                {(this.props.user==null) ? <Redirect to='/login' /> : null}
                 <Route exact path='/' component={PageDashboard}/>
                 <Route exact path='/login' component={PageLogin}/>
                 <Route exact path='/create-bill' component={PageCreateBill}/>
@@ -30,4 +34,16 @@ class PageRoutes extends React.Component {
     }
 }
 
-export default PageRoutes;
+const mapStateToProps = state => {
+    return {
+        user: selectors.getUser(state)
+    }
+}
+
+const mapDispatchToProps = dispatch => {
+    return {
+
+    }
+}
+
+export default connect(mapStateToProps, mapDispatchToProps)(PageRoutes);
