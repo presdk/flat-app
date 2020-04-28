@@ -38,6 +38,7 @@ router.get("/:userId/", async (req, res) => {
  * @group Users
  * @param {string} name.string.required - the user's name
  * @param {string} email_address.string.required - the user's email
+ * @param {string} type - The type of user: `user` or `admin`
  * @returns {User.model} 200 - The user
  * @returns {object} 500 - Error
  */
@@ -45,39 +46,24 @@ router.post("/add", async (req, res) => {
   const newEntry = req.body;
   const { name, email_address } = newEntry;
 
-  await User.find(
-    {
+  try {
+    const existingUsers = await User.find({
       $or: [{ name: name }, { email_address: email_address }],
-    },
-    (err, users) => {
-      if (err) {
-        throw err;
-      } else {
-        return users;
-      }
+    }).exec();
+
+    if (existingUsers && existingUsers.length > 0) {
+      res
+        .status(500)
+        .send("User already exists with same name or email address");
+      return;
     }
-  )
-    .then((users) => {
-      if (users.length > 0) {
-        res.status(500).send("User already exists");
-      } else {
-        return User.create(newEntry, (e, newEntry) => {
-          if (e) {
-            console.log(e);
-            throw e;
-          } else {
-            return newEntry;
-          }
-        });
-      }
-    })
-    .then((newEntry) => {
-      res.send(newEntry);
-    })
-    .catch((err) => {
-      console.log(err);
-      res.sendStatus(500);
-    });
+
+    const newUser = await User.create(newEntry);
+    res.send(newUser);
+  } catch (err) {
+    console.log(err);
+    res.status(500).send(err);
+  }
 });
 
 /**
