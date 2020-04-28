@@ -1,8 +1,8 @@
 import { combineReducers } from 'redux';
-import * as types from './actionTypes';
+import * as types from './types';
 
 const INIT = {
-  user_type: null
+  user: null
 }
 
 function userStates(state=INIT, action) {
@@ -10,7 +10,7 @@ function userStates(state=INIT, action) {
         case types.SET_USER_TYPE:
             return {
                 ...state,
-                user_type: action.user_type
+                user: action.user
             }
         default:
             return state

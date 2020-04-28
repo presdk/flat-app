@@ -1,16 +1,18 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
+import { Provider } from 'react-redux';
 import { BrowserRouter as Router } from 'react-router-dom';
 
-import Header from './Components/header';
+import store from './redux/store';
 import PageRouter from './Routes';
+import Header from './Components/header';
 
 ReactDOM.render(
-  <div>
+  <Provider store={store}>
     <Router>
       <Header />
       <PageRouter />
     </Router>
-  </div>,
+  </Provider>,
   document.getElementById('root')
 );

@@ -1,5 +1,8 @@
 import React from 'react';
+import { connect } from 'react-redux';
 import { AppBar, Toolbar, Typography } from '@material-ui/core';
+
+import * as selectors from '../redux/selectors';
 
 class Header extends React.Component {
     constructor(props) {
@@ -14,7 +17,7 @@ class Header extends React.Component {
             <AppBar position="static" style={{ marginBottom: '8px' }}>
                 <Toolbar>
                     <Typography variant="h6">
-                        Bills Splitter
+                        Bills Splitter {this.props.user ? this.props.user.name : null}
                     </Typography>
                 </Toolbar>
             </AppBar>
@@ -22,4 +25,16 @@ class Header extends React.Component {
     }
 }
 
-export default Header
+const mapStateToProps = state => {
+    return {
+        user: selectors.getUser(state)
+    }
+}
+
+const mapDispatchToProps = dispatch => {
+    return {
+
+    }
+}
+
+export default connect(mapStateToProps, mapDispatchToProps)(Header)
