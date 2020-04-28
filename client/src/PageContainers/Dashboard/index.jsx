@@ -1,6 +1,9 @@
 import React from 'react';
+import { connect } from 'react-redux';
 import axios from 'axios';
 import { Select, MenuItem } from '@material-ui/core';
+
+import * as selectors from '../../redux/selectors';
 
 import BillsTable from '../../Components/table';
 
@@ -84,7 +87,7 @@ class PageDashboard extends React.Component {
     
     handleStatusChange = (value, row) => {
         axios.post(
-            `http://localhost:4000/bills/${row._id}/${userID}/update`, 
+            `http://localhost:4000/bills/${row._id}/${this.props.user._id}/update`, 
             { status: value }
         ).then(res => {
             console.log(res.data);
@@ -109,17 +112,16 @@ class PageDashboard extends React.Component {
 
     componentDidMount() {
         axios.get('http://localhost:4000/bills').then(res => {
+            console.log(res.data)
             var i = 0;
             res.data.forEach(item => {
                 item.index = i;
                 i++;
-                let status = "unfound";
                 item.payments.forEach(userItem => {
-                    if (userItem.userId === userID) {
-                        status = userItem.status;
+                    if (this.props.user && userItem.userId === this.props.user._id) {
+                        item.status = userItem.status;
                     }
                 });
-                item.status = status;
             });
             this.setState({data: res.data});
         });
@@ -140,7 +142,19 @@ class PageDashboard extends React.Component {
     }
 }
 
-export default PageDashboard
+const mapStateToProps = state => {
+    return {
+        user: selectors.getUser(state)
+    }
+}
+
+const mapDispatchToProps = dispatch => {
+    return {
+
+    }
+}
+
+export default connect(mapStateToProps, mapDispatchToProps)(PageDashboard)
 
 // TODO: when landing on page, check if there is a user logged in,
 // If not, redirect them to login

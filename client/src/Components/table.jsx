@@ -66,7 +66,7 @@ class BillsTable extends React.Component {
                                     key={cell.key}
                                     align={cell.align}
                                 >
-                                    {cell.render ? cell.render(entry[cell.key], entry) : entry[cell.key]}
+                                    {entry[cell.key] ? (cell.render ? cell.render(entry[cell.key], entry) : entry[cell.key]) : null}
                                 </TableCell>
                             )
                         })}
