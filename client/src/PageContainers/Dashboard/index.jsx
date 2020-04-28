@@ -1,19 +1,11 @@
 import React from 'react';
 import axios from 'axios';
+import { Select, MenuItem } from '@material-ui/core';
 
 import BillsTable from '../../Components/table';
 
-const columns = [
-    { key: 'date', name: 'Date', align: 'left' },
-    { key: 'type', name: 'Type', align: 'left' },
-    { key: 'status', name: 'Status', align: 'left' }
-]
-
-/*ABOUT: What does the data look like?
-    date is in the format of "dd-mm-yy"
-    type is either "water"/"power"/"internet"/"misc"
-    status is either "unpaid"/"marked"/"paid" converted to "pending"/"paid"/"confirmed"
-*/
+// TEMP
+const userID = "5ea694e25f7777161cfe2832";
 
 function sortByDate(a, b) {
     const dateA = a['date'].split('-');
@@ -72,6 +64,36 @@ class PageDashboard extends React.Component {
         }
     }
 
+    columns = [
+        { key: 'date', name: 'Date', align: 'left' },
+        { key: 'type', name: 'Type', align: 'left' },
+        { key: 'status', name: 'Status', align: 'left', render: (cell, row) => this.renderStatusSelect(cell, row) }
+    ]
+    
+    renderStatusSelect = (cell, row) => {
+        return (
+            <Select
+                value={cell}
+                onChange={(event) => this.handleStatusChange(event.target.value, row)}
+            >
+                <MenuItem value='unpaid'>unpaid</MenuItem>
+                <MenuItem value='paid'>paid</MenuItem>
+            </Select>
+        )
+    }
+    
+    handleStatusChange = (value, row) => {
+        axios.post(
+            `http://localhost:4000/bills/${row._id}/${userID}/update`, 
+            { status: value }
+        ).then(res => {
+            console.log(res.data);
+        });
+        let temp = [...this.state.data];
+        temp[row.index].status = value;
+        this.setState({ data: temp });
+    }
+
     handleRequestSort = (event, property) => {
         switch(property) {
             case 'date':
@@ -86,12 +108,12 @@ class PageDashboard extends React.Component {
     };
 
     componentDidMount() {
-        // TEMP
-        const userID = "5ea694e25f7777161cfe2832";
-
         axios.get('http://localhost:4000/bills').then(res => {
+            var i = 0;
             res.data.forEach(item => {
-                var status = "unfound";
+                item.index = i;
+                i++;
+                let status = "unfound";
                 item.payments.forEach(userItem => {
                     if (userItem.userId === userID) {
                         status = userItem.status;
@@ -100,14 +122,14 @@ class PageDashboard extends React.Component {
                 item.status = status;
             });
             this.setState({data: res.data});
-        })
+        });
     }
     
     render() {
         return (   
             <div>
                 <BillsTable 
-                    columns={columns}
+                    columns={this.columns}
                     data={this.state.data}
                     requestDescSort={(event, property) => this.handleRequestSort(event, property)}
                     // defaultOrderBy='date'
