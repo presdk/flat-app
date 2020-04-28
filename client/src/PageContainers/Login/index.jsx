@@ -28,6 +28,7 @@ class PageLogin extends React.Component {
             }
         });
         this.props.setUser(user_states);
+        this.setState({ loggedIn: true })
     }
 
     componentDidMount() {
