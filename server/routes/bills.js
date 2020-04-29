@@ -11,13 +11,13 @@ const { BillPayment } = require("../models/BillPayment");
  * @returns {object} 500 - Error
  */
 router.get("/", async (req, res) => {
-  await Bill.find({}, (err, bills) => {
-    if (err) {
-      res.sendStatus(500);
-    } else {
-      res.send(JSON.stringify(bills));
-    }
-  });
+  try {
+    const bills = await Bill.find().exec();
+    res.send(bills);
+  } catch (err) {
+    console.log(err);
+    res.status(500).send(err);
+  }
 });
 
 /**
@@ -27,13 +27,13 @@ router.get("/", async (req, res) => {
  * @returns {object} 500 - Error
  */
 router.get("/:billId/", async (req, res) => {
-  await Bill.findById(req.params.billId, (err, bill) => {
-    if (err) {
-      res.send();
-    } else {
-      return JSON.stringify(bill);
-    }
-  });
+  try {
+    const bill = await Bill.findById(req.params.billId).exec();
+    res.send(bill);
+  } catch (err) {
+    console.log(err);
+    res.status(500).send(err);
+  }
 });
 
 /**
@@ -68,14 +68,8 @@ router.post("/add", async (req, res) => {
       bill.payments.push(payment);
     });
 
-    bill
-      .save()
-      .then(() => {
-        res.send(bill);
-      })
-      .catch((err) => {
-        res.status(500).send(err);
-      });
+    await bill.save();
+    res.send(bill);
   } catch (err) {
     console.log(err);
     res.status(500).send(err);
@@ -95,34 +89,25 @@ router.post("/:billId/:userId/update", async (req, res) => {
   const { status, usage_in_days } = req.body;
 
   try {
-    await Bill.findById(billId, (err, bill) => {
-      if (err) {
-        console.log(err);
-        res.sendStatus(500);
-      } else {
-        const payment = bill.payments.find((p) => p.userId == userId);
-        if (!payment) {
-          res.status(500).send(`User id: ${userId} was not found from bill`);
-        } else {
-          if (usage_in_days) {
-            payment.usage_in_days = usage_in_days;
-          }
+    const bill = await Bill.findById(billId).exec();
 
-          if (status) {
-            payment.status = status;
-          }
+    const payment = bill.payments.find((p) => p.userId == userId);
 
-          bill
-            .save()
-            .then(() => {
-              res.send(bill);
-            })
-            .catch((err) => {
-              res.status(500).send(err);
-            });
-        }
-      }
-    });
+    if (payment == null) {
+      res.status(500).send(`User id: ${userId} was not found from bill`);
+      return;
+    }
+
+    if (usage_in_days != null) {
+      payment.usage_in_days = usage_in_days;
+    }
+
+    if (status != null) {
+      payment.status = status;
+    }
+
+    await bill.save();
+    res.send(bill);
   } catch (err) {
     console.log(err);
     res.status(500).send(err);
