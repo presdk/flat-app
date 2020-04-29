@@ -1,14 +1,12 @@
 import React from 'react';
 import { connect } from 'react-redux';
+import { Link } from 'react-router-dom';
 import axios from 'axios';
 import { Select, MenuItem } from '@material-ui/core';
 
 import * as selectors from '../../redux/selectors';
 
 import BillsTable from '../../Components/table';
-
-// TEMP
-const userID = "5ea694e25f7777161cfe2832";
 
 function sortByDate(a, b) {
     const dateA = a['date'].split('-');
@@ -68,10 +66,21 @@ class PageDashboard extends React.Component {
     }
 
     columns = [
-        { key: 'date', name: 'Date', align: 'left' },
+        { key: 'date', name: 'Date', align: 'left', render: (cell, row) => this.renderBillRedirect(cell, row) },
         { key: 'type', name: 'Type', align: 'left' },
         { key: 'status', name: 'Status', align: 'left', render: (cell, row) => this.renderStatusSelect(cell, row) }
     ]
+
+    renderBillRedirect = (cell, row) =>{
+        return (
+            <Link to={{
+                pathname: '/bill',
+                state: {bill_id: row._id}
+            }}>
+                {cell}
+            </Link>
+        )
+    } 
     
     renderStatusSelect = (cell, row) => {
         return (
