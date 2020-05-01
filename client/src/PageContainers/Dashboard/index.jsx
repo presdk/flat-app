@@ -6,7 +6,7 @@ import { Select, MenuItem } from '@material-ui/core';
 
 import * as selectors from '../../redux/selectors';
 
-import BillsTable from '../../Components/table';
+import AppTable from '../../Components/table';
 
 function sortByDate(a, b) {
     const dateA = a['date'].split('-');
@@ -98,9 +98,7 @@ class PageDashboard extends React.Component {
         axios.post(
             `http://localhost:4000/bills/${row._id}/${this.props.user._id}/update`, 
             { status: value }
-        ).then(res => {
-            console.log(res.data);
-        });
+        )
         let temp = [...this.state.data];
         temp[row.index].status = value;
         this.setState({ data: temp });
@@ -121,7 +119,6 @@ class PageDashboard extends React.Component {
 
     componentDidMount() {
         axios.get('http://localhost:4000/bills').then(res => {
-            console.log(res.data)
             var i = 0;
             res.data.forEach(item => {
                 item.index = i;
@@ -139,9 +136,10 @@ class PageDashboard extends React.Component {
     render() {
         return (   
             <div>
-                <BillsTable 
+                <AppTable 
                     columns={this.columns}
                     data={this.state.data}
+                    sorter={true}
                     requestDescSort={(event, property) => this.handleRequestSort(event, property)}
                     // defaultOrderBy='date'
                     // defaultOrder='desc'
@@ -164,6 +162,3 @@ const mapDispatchToProps = dispatch => {
 }
 
 export default connect(mapStateToProps, mapDispatchToProps)(PageDashboard)
-
-// TODO: when landing on page, check if there is a user logged in,
-// If not, redirect them to login

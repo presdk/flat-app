@@ -9,7 +9,7 @@ import {
     TableSortLabel
 } from '@material-ui/core';
 
-class BillsTable extends React.Component {
+class AppTable extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
@@ -35,13 +35,16 @@ class BillsTable extends React.Component {
                     align={column.align}
                     sortDirection={this.state.orderBy === column.key ? this.state.order : false}
                 >
-                    <TableSortLabel
-                        active={this.state.orderBy === column.key}
-                        direction={this.state.orderBy === column.key ? this.state.order : 'desc'}
-                        onClick={this.createSortHandler(column.key)}
-                    >
-                        {column.name}
-                    </TableSortLabel>
+                    {this.props.sorter ? 
+                        <TableSortLabel
+                            active={this.state.orderBy === column.key}
+                            direction={this.state.orderBy === column.key ? this.state.order : 'desc'}
+                            onClick={this.createSortHandler(column.key)}
+                        >
+                            {column.name}
+                        </TableSortLabel>
+                        : column.name
+                    }
                 </TableCell>
             )
         })
@@ -94,4 +97,4 @@ class BillsTable extends React.Component {
     }
 }
 
-export default BillsTable
+export default AppTable
