@@ -4,13 +4,15 @@ import axios from 'axios';
 import { 
     ExpansionPanel, 
     ExpansionPanelSummary, 
-    ExpansionPanelDetails,
-    Select,
-    MenuItem
+    ExpansionPanelDetails
 } from '@material-ui/core';
+import { ToggleButton } from '@material-ui/lab'
+import LockIcon from '@material-ui/icons/Lock';
+import LockOpenIcon from '@material-ui/icons/LockOpen';
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 
 import AppTable from '../../Components/table';
+import StatusSelector from '../../Components/statusSelector';
 
 import * as selectors from '../../redux/selectors';
 
@@ -25,14 +27,15 @@ class PageViewBill extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
+            edit: false,
             bill_details: null
         }
     }
 
-    handleStatusUpdate = value => {
+    handleStatusUpdate = (new_val, user_id) => {
         axios.post(
-            `http://localhost:4000/bills/${this.state.bill_details._id}/${this.props.user._id}/update`, 
-            { status: value }
+            `http://localhost:4000/bills/${this.state.bill_details._id}/${user_id}/update`, 
+            { status: new_val }
         )
     }
 
@@ -102,14 +105,40 @@ class PageViewBill extends React.Component {
                     </ExpansionPanel>
                     <p>
                         <a href='http://localhost:4000' target='_blank' rel="noopener noreferrer">See original</a>
-                    </p>
-                    <Select
-                        defaultValue={extract.status}
-                        onChange={event => this.handleStatusUpdate(event.target.value)}
-                    >
-                        <MenuItem value='unpaid'>unpaid</MenuItem>
-                        <MenuItem value='paid'>paid</MenuItem>
-                    </Select>
+                    </p> 
+                    {this.props.user.type === 'user' ? 
+                        (extract ? 
+                            <StatusSelector 
+                                user_type={this.props.user.type}
+                                handleStatusChange={(new_val, user_id) => this.handleStatusUpdate(new_val, user_id)}
+                                payment={extract}
+                            />
+                        : 
+                            null
+                        )
+                    :
+                        <div>
+                            {bill.payments.slice(0, bill.payments.length-1).map(payment => {
+                                return (
+                                    <StatusSelector 
+                                        key={payment.userId}
+                                        user_type={this.props.user.type}
+                                        handleStatusChange={(new_val, user_id) => this.handleStatusUpdate(new_val, user_id)}
+                                        payment={payment}
+                                        override={this.state.edit}
+                                    />
+                                )
+                            })}
+                            <ToggleButton
+                                value='check'
+                                selected={this.state.edit}
+                                onChange={() => {this.setState({ edit: !this.state.edit })}}
+                                size='small'
+                            >
+                                {this.state.edit ? <LockOpenIcon /> : <LockIcon />}
+                            </ToggleButton>
+                        </div>
+                    }
                 </div>
             )
         } else {

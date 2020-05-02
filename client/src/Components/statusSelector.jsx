@@ -38,7 +38,19 @@ class StatusSelector extends React.Component {
                                 <MenuItem value='paid'>Paid</MenuItem>
                             </Select>
                         :
-                            'Paid'
+                            (this.props.override ? 
+                                <Select
+                                    key={payment.userId}
+                                    defaultValue={payment.status}
+                                    onChange={event => this.props.handleStatusChange(event.target.value, payment.userId)}
+                                >
+                                    <MenuItem value='unpaid'>Unpaid</MenuItem>
+                                    <MenuItem value='marked'>Marked</MenuItem>
+                                    <MenuItem value='paid'>Paid</MenuItem>
+                                </Select>
+                            :
+                                'Paid'
+                            )
                         }
                     </span>
                 }<br/>
