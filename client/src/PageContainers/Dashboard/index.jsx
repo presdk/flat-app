@@ -68,7 +68,7 @@ class PageDashboard extends React.Component {
     columns = [
         { key: 'date', name: 'Date', align: 'left', render: (cell, row) => this.renderBillRedirect(cell, row) },
         { key: 'type', name: 'Type', align: 'left' },
-        { key: 'status', name: 'Status', align: 'left', render: (cell, row) => this.renderStatusSelect(cell, row) }
+        { key: 'payments', name: 'Status', align: 'left', render: (cell, row) => this.renderStatusSelect(cell, row) }
     ]
 
     renderBillRedirect = (cell, row) =>{
@@ -83,20 +83,46 @@ class PageDashboard extends React.Component {
     } 
     
     renderStatusSelect = (cell, row) => {
-        return (
-            <Select
-                defaultValue={cell}
-                onChange={event => this.handleStatusChange(event.target.value, row)}
-            >
-                <MenuItem value='unpaid'>unpaid</MenuItem>
-                <MenuItem value='paid'>paid</MenuItem>
-            </Select>
-        )
+        return cell.map(payment => {
+            return (
+                <div>
+                    {(this.props.user.type === 'user') ?
+                        ((payment.status !== 'paid') ?
+                            <Select
+                                key={payment.userId}
+                                defaultValue={payment.status}
+                                onChange={event => this.handleStatusChange(event.target.value, row, payment.userId)}
+                            >
+                                <MenuItem value='unpaid'>unpaid</MenuItem>
+                                <MenuItem value='marked'>marked</MenuItem>
+                            </Select>
+                        :
+                            'Paid'
+                        )
+                    : 
+                        <span>
+                            {payment.name}: {(payment.status !== 'paid') ?
+                                <Select
+                                    key={payment.userId}
+                                    defaultValue={payment.status}
+                                    onChange={event => this.handleStatusChange(event.target.value, row, payment.userId)}
+                                >
+                                    <MenuItem value={payment.status}>{payment.status}</MenuItem>
+                                    <MenuItem value='paid'>Paid</MenuItem>
+                                </Select>
+                            :
+                                'Paid'
+                            }
+                        </span>
+                    }<br/>
+                </div>
+            )
+        })
     }
     
-    handleStatusChange = (value, row) => {
+    handleStatusChange = (value, row, userId) => {
         axios.post(
-            `http://localhost:4000/bills/${row._id}/${this.props.user._id}/update`, 
+            `http://localhost:4000/bills/${row._id}/${userId}/update`, 
             { status: value }
         )
     }
@@ -115,18 +141,33 @@ class PageDashboard extends React.Component {
     };
 
     componentDidMount() {
-        axios.get('http://localhost:4000/bills').then(res => {
-            var i = 0;
-            res.data.forEach(item => {
-                item.index = i;
-                i++;
-                item.payments.forEach(userItem => {
-                    if (this.props.user && userItem.userId === this.props.user._id) {
-                        item.status = userItem.status;
-                    }
-                });
-            });
-            this.setState({data: res.data});
+        axios.get('http://localhost:4000/bills').then(b_res => {
+            axios.get('http://localhost:4000/users').then(u_res => {
+                var i = 0;
+                if (this.props.user && (this.props.user.type === 'user')) {
+                    b_res.data.forEach(item => {
+                        item.index = i;
+                        i++;
+                        item.payments.forEach(userItem => {
+                            if (userItem.userId === this.props.user._id) {
+                                item.payments = [userItem];
+                            }
+                        });
+                    });
+                } else {
+                    b_res.data.forEach(item => {
+                        item.payments.forEach(userItem => {
+                            const found_user = u_res.data.filter(user => {
+                                return user._id === userItem.userId
+                            });
+                            if (Array.isArray(found_user) && found_user.length) {
+                                userItem.name = found_user[0].name;
+                            }
+                        })
+                    });
+                }
+                this.setState({ data: b_res.data });
+            })
         });
     }
     
@@ -138,8 +179,6 @@ class PageDashboard extends React.Component {
                     data={this.state.data}
                     sorter={true}
                     requestDescSort={(event, property) => this.handleRequestSort(event, property)}
-                    // defaultOrderBy='date'
-                    // defaultOrder='desc'
                 />
             </div>
         )
