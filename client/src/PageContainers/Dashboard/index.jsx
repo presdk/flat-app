@@ -2,11 +2,11 @@ import React from 'react';
 import { connect } from 'react-redux';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
-import { Select, MenuItem } from '@material-ui/core';
 
 import * as selectors from '../../redux/selectors';
 
 import AppTable from '../../Components/table';
+import StatusSelector from '../../Components/statusSelector';
 
 function sortByDate(a, b) {
     const dateA = a['date'].split('-');
@@ -85,45 +85,19 @@ class PageDashboard extends React.Component {
     renderStatusSelect = (cell, row) => {
         return cell.map(payment => {
             return (
-                <div>
-                    {(this.props.user.type === 'user') ?
-                        ((payment.status !== 'paid') ?
-                            <Select
-                                key={payment.userId}
-                                defaultValue={payment.status}
-                                onChange={event => this.handleStatusChange(event.target.value, row, payment.userId)}
-                            >
-                                <MenuItem value='unpaid'>unpaid</MenuItem>
-                                <MenuItem value='marked'>marked</MenuItem>
-                            </Select>
-                        :
-                            'Paid'
-                        )
-                    : 
-                        <span>
-                            {payment.name}: {(payment.status !== 'paid') ?
-                                <Select
-                                    key={payment.userId}
-                                    defaultValue={payment.status}
-                                    onChange={event => this.handleStatusChange(event.target.value, row, payment.userId)}
-                                >
-                                    <MenuItem value={payment.status}>{payment.status}</MenuItem>
-                                    <MenuItem value='paid'>Paid</MenuItem>
-                                </Select>
-                            :
-                                'Paid'
-                            }
-                        </span>
-                    }<br/>
-                </div>
+                <StatusSelector 
+                    user_type={this.props.user.type}
+                    payment={payment}
+                    handleStatusChange={(new_val, user_id) => this.handleStatusChange(new_val, user_id, row)}
+                />
             )
         })
     }
     
-    handleStatusChange = (value, row, userId) => {
+    handleStatusChange = (new_value, user_id, row) => {
         axios.post(
-            `http://localhost:4000/bills/${row._id}/${userId}/update`, 
-            { status: value }
+            `http://localhost:4000/bills/${row._id}/${user_id}/update`, 
+            { status: new_value }
         )
     }
 
