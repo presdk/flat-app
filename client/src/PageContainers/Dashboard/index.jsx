@@ -85,8 +85,8 @@ class PageDashboard extends React.Component {
     renderStatusSelect = (cell, row) => {
         return (
             <Select
-                value={cell}
-                onChange={(event) => this.handleStatusChange(event.target.value, row)}
+                defaultValue={cell}
+                onChange={event => this.handleStatusChange(event.target.value, row)}
             >
                 <MenuItem value='unpaid'>unpaid</MenuItem>
                 <MenuItem value='paid'>paid</MenuItem>
@@ -99,9 +99,6 @@ class PageDashboard extends React.Component {
             `http://localhost:4000/bills/${row._id}/${this.props.user._id}/update`, 
             { status: value }
         )
-        let temp = [...this.state.data];
-        temp[row.index].status = value;
-        this.setState({ data: temp });
     }
 
     handleRequestSort = (event, property) => {
