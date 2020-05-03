@@ -17,6 +17,7 @@ const BillType = Object.freeze({
  * @property {string} type.required - The type of the bill: `water` or `power` or `internet` or `misc`
  * @property {Number} total_amount.required - The total dollar amount of the bill
  * @property {string} reference_name - The  reference name to use for the payment of this bill
+ * @property {Boolean} is_admin_confirmed - True if the correctness of the bill has been confirmed by the admin
  * @property {Boolean} is_deleted - True if the bill has been deleted
  * @property {Array.<File>} files - Files attached to the bill
  * @property {Array.<BillPayment>} payments - The payment requests issued from this bill
@@ -38,6 +39,7 @@ const BillSchema = new Schema({
     min: [0, "Amount must be a positive number"],
   },
   reference_name: String,
+  is_admin_confirmed: { type: Boolean, default: false },
   is_deleted: { type: Boolean, default: false },
   files: [FileSchema],
   payments: [BillPaymentSchema],

@@ -12,9 +12,10 @@ describe("Bill model", () => {
     });
   });
 
-  it("create bill sets default deleted flag", () => {
+  it("create bill sets default flags", () => {
     const bill = Bill();
 
+    assert.equal(false, bill.is_admin_confirmed);
     assert.equal(false, bill.is_deleted);
   });
 
