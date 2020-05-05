@@ -1,7 +1,7 @@
 import React from 'react';
 import { connect } from 'react-redux';
 import axios from 'axios';
-import { Checkbox } from '@material-ui/core';
+import { Button, Checkbox } from '@material-ui/core';
 
 import * as selectors from '../../redux/selectors';
 
@@ -87,6 +87,12 @@ class PageCreateBill extends React.Component {
                         columns={columns}
                         data={bill.payments}
                     />
+                    <Button
+                        color='primary'
+                        onClick={() => axios.post(`http://localhost:4000/bills/${this.props.location.state.bill_id}/update`, { is_admin_confirmed: true })}
+                    >
+                        Publish Bill
+                    </Button>
                 </div>
             )
         } else {
