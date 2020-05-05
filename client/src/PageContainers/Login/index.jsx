@@ -56,6 +56,7 @@ class PageLogin extends React.Component {
                     <Select
                         value={this.state.selected_user}
                         onChange={(event) => this.setUser(event.target.value)}
+                        autoWidth={true}
                     >
                         {this.select_items ? this.select_items : null}
                     </Select>

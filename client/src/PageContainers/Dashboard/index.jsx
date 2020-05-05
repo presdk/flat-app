@@ -2,6 +2,14 @@ import React from 'react';
 import { connect } from 'react-redux';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
+import { 
+    Backdrop,
+    CircularProgress,
+    ExpansionPanel, 
+    ExpansionPanelSummary, 
+    ExpansionPanelDetails 
+} from '@material-ui/core';
+import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 
 import * as selectors from '../../redux/selectors';
 
@@ -43,9 +51,9 @@ function sortByType(a, b) {
 }
 
 function sortByStatus(a, b) {
-    if (a['status'] > b['status']) {
+    if (a.payments[0]['status'] > b.payments[0]['status']) {
         return -1
-    } else if (a['status'] < b['status']) {
+    } else if (a.payments[0]['status'] < b.payments[0]['status']) {
         return 1
     } else {
         const prelim = sortByDate(a, b);
@@ -57,24 +65,42 @@ function sortByStatus(a, b) {
     }
 }
 
+function groupBy(list, props) {
+    return list.reduce((a, b) => {
+       (a[b[props]] = a[b[props]] || []).push(b);
+       return a;
+    }, {});
+  }
+
 class PageDashboard extends React.Component {
     constructor(props) {
         super(props);
         this.state={
-            data: []
+            loading: true,
+            data: {}
         }
     }
 
-    columns = [
-        { key: 'date', name: 'Date', align: 'left', render: (cell, row) => this.renderBillRedirect(cell, row) },
+    unconfirmed_columns = (this.props.user && this.props.user.type === 'admin') ? [
+        { key: 'date', name: 'Date', align: 'left', render: (cell, row) => this.renderBillRedirect('create', cell, row) },
+        { key: 'type', name: 'Type', align: 'left' },
+        { key: 'total_amount', name: 'Billed', align: 'left' }
+    ] : [
+        { key: 'date', name: 'Date', align: 'left' },
+        { key: 'type', name: 'Type', align: 'left' },
+        { key: 'total_amount', name: 'Billed', align: 'left' }
+    ]
+
+    confirmed_columns = [
+        { key: 'date', name: 'Date', align: 'left', render: (cell, row) => this.renderBillRedirect('view', cell, row) },
         { key: 'type', name: 'Type', align: 'left' },
         { key: 'payments', name: 'Status', align: 'left', render: (cell, row) => this.renderStatusSelect(cell, row) }
     ]
 
-    renderBillRedirect = (cell, row) =>{
+    renderBillRedirect = (page, cell, row) =>{
         return (
             <Link to={{
-                pathname: '/bill',
+                pathname: (page === 'view') ? '/bill' : '/create-bill',
                 state: {bill_id: row._id}
             }}>
                 {cell}
@@ -107,7 +133,7 @@ class PageDashboard extends React.Component {
                 return sortByDate
             case 'type':
                 return sortByType
-            case 'status':
+            case 'payments':
                 return sortByStatus
             default:
                 return sortByDate
@@ -140,7 +166,7 @@ class PageDashboard extends React.Component {
                         })
                     });
                 }
-                this.setState({ data: b_res.data });
+                this.setState({ loading: false, data: groupBy(b_res.data, 'is_admin_confirmed') });
             })
         });
     }
@@ -148,12 +174,32 @@ class PageDashboard extends React.Component {
     render() {
         return (   
             <div>
-                <AppTable 
-                    columns={this.columns}
-                    data={this.state.data}
-                    sorter={true}
-                    requestDescSort={(event, property) => this.handleRequestSort(event, property)}
-                />
+                <Backdrop open={this.state.loading} style={{ zIndex: 1000 }}>
+                    <CircularProgress color="primary" />
+                </Backdrop>
+                <ExpansionPanel>
+                    <ExpansionPanelSummary
+                        expandIcon={<ExpandMoreIcon />}
+                    >
+                        Unpublished Bills ({this.state.loading ? 'loading' : (this.state.data.false ? this.state.data.false.length : 0)})
+                    </ExpansionPanelSummary>
+                    <ExpansionPanelDetails>
+                        <AppTable 
+                            columns={this.unconfirmed_columns}
+                            data={this.state.data.false}
+                            sorter={true}
+                            requestDescSort={(event, property) => this.handleRequestSort(event, property)}
+                        />
+                    </ExpansionPanelDetails>
+                </ExpansionPanel>
+                <div style={{ marginTop: '24px' }}>
+                    <AppTable 
+                        columns={this.confirmed_columns}
+                        data={this.state.data.true}
+                        sorter={true}
+                        requestDescSort={(event, property) => this.handleRequestSort(event, property)}
+                    />
+                </div>
             </div>
         )
     }
