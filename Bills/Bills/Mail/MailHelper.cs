@@ -12,6 +12,7 @@ namespace Bills.Mail
     {
         private readonly IMailService mailService;
         private readonly IFileStore fileStore;
+        private int downloadCount;
 
         /// <summary>
         /// The constructor for the mail helper
@@ -28,31 +29,49 @@ namespace Bills.Mail
         }
 
         /// <inheritdoc />
-        public void DownloadMessages(string filterQuery, string[] attachmentTypes, string folderName)
+        public bool DownloadMessages(string mailFilterQuery, IList<AttachmentTypes> attachmentTypesFilter,
+            string outputFolderName)
         {
-            this.fileStore.CreateDirectory(folderName);
+            this.downloadCount = 0;
 
-            IList<MessageModel> messages = this.mailService.GetMessages(filterQuery, attachmentTypes);
+            Trace.WriteLine($"Download started for filter query: {mailFilterQuery} with attachment types: {attachmentTypesFilter}...");
+
+            try
+            {
+                this.fileStore.CreateDirectory(outputFolderName);
+            }
+            catch (Exception ex)
+            {
+                Trace.WriteLine($"\tError occured creating directory at {outputFolderName} with error: {ex.Message}");
+                Trace.WriteLine("Download has been stopped.");
+                return false;
+            }
+
+            IList<MessageModel> messages = this.mailService.GetMessages(mailFilterQuery, attachmentTypesFilter);
 
             foreach (MessageModel message in messages)
             {
-                Trace.WriteLine($"Retrieved message with subject: {message.Subject}");
+                Trace.WriteLine($"\tRetrieved message with subject: {message.Subject}");
 
                 foreach (FileModel file in message.Files)
                 {
+                    Debug.Assert(file.DataInBytes != null);
                     if (file.DataInBytes != null)
                     {
                         Trace.WriteLine(
-                            $"\tDownloading file with subject: {file.Subject} of mime type: {file.MimeType}");
-                        DownloadFile(file, folderName);
+                            $"\t\tDownloading file of mime type: {file.AttachmentType}");
+                        DownloadFile(file, outputFolderName);
                     }
                     else
                     {
                         Trace.WriteLine(
-                            $"\tFailed to download file with subject: {file.Subject} of mime type: {file.MimeType}");
+                            $"\t\tFailed to download file of mime type: {file.AttachmentType}");
                     }
                 }
             }
+
+            Trace.WriteLine($"{downloadCount} files were downloaded.");
+            return true;
         }
 
         private void DownloadFile(FileModel file, string folderPath)
@@ -60,30 +79,17 @@ namespace Bills.Mail
             try
             {
                 string guid = Guid.NewGuid().ToString();
-                string fileExt = GetFileExtension(file.MimeType);
+                string fileExt = file.AttachmentType.FileExtension;
                 string savePath = Path.Join(folderPath, $"{guid}{fileExt}");
 
                 this.fileStore.SaveFile(file.DataInBytes, savePath);
+
+                this.downloadCount++;
             }
             catch (Exception ex)
             {
                 Trace.WriteLine(string.Format("Exception caught while downloading file {0}", ex));
             }
-        }
-
-        private static string GetFileExtension(string mimeType)
-        {
-            if (mimeType.Equals("application/pdf"))
-            {
-                return ".pdf";
-            }
-            else
-            {
-                //TODO support other file types if needed
-                throw new NotImplementedException();
-            }
-
-            return null;
         }
     }
 }
