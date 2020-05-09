@@ -1,4 +1,6 @@
-﻿namespace Bills.Models
+﻿using System.Diagnostics;
+
+namespace Bills.Models
 {
     /// <summary>
     /// The file model
@@ -6,18 +8,27 @@
     public class FileModel
     {
         /// <summary>
-        /// The subject
+        /// Constructor for the file model
         /// </summary>
-        public string Subject { get; set; }
+        /// <param name="attachmentType">the attachment type</param>
+        /// <param name="dataInBytes">the data in bytes</param>
+        public FileModel(AttachmentTypes attachmentType, byte[] dataInBytes)
+        {
+            Debug.Assert(attachmentType != null);
+            Debug.Assert(dataInBytes != null && dataInBytes.Length > 0);
+
+            this.AttachmentType = attachmentType;
+            this.DataInBytes = dataInBytes;
+        }
 
         /// <summary>
         /// The mime type
         /// </summary>
-        public string MimeType { get; set; }
+        public AttachmentTypes AttachmentType { get; }
 
         /// <summary>
         /// The data encoded in base 64
         /// </summary>
-        public byte[] DataInBytes { get; set; }
+        public byte[] DataInBytes { get; }
     }
 }

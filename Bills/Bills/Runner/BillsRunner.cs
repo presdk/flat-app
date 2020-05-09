@@ -1,6 +1,8 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using Bills.Mail;
+using Bills.Models;
 
 namespace Bills.Runner
 {
@@ -30,7 +32,7 @@ namespace Bills.Runner
 
             // TODO: Download pdf for internet
             // TODO: Download pdf for water
-            string[] allowedAttachmentTypes = new[] {"application/pdf"};
+            List<AttachmentTypes> allowedAttachmentTypes = new List<AttachmentTypes>(){AttachmentTypes.Pdf};
             this.mailHelper.DownloadMessages("subject:trustpower", allowedAttachmentTypes, "power");
 
             Trace.WriteLine("Runner has ended gracefully");

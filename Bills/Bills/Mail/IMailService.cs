@@ -15,6 +15,6 @@ namespace Bills.Mail
         /// <param name="filterQuery">the filter query</param>
         /// <param name="attachmentTypes">the attachment types to include in the message</param>
         /// <returns>list of messages</returns>
-        IList<MessageModel> GetMessages(string filterQuery, string[] attachmentTypes);
+        IList<MessageModel> GetMessages(string filterQuery, IList<AttachmentTypes> attachmentTypes);
     }
 }

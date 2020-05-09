@@ -40,7 +40,7 @@ namespace Bills.Mail
         }
 
         /// <inheritdoc />
-        public IList<MessageModel> GetMessages(string filterQuery, string[] attachmentTypes)
+        public IList<MessageModel> GetMessages(string filterQuery, IList<AttachmentTypes> attachmentTypes)
         {
             IList<MessageModel> messages = new List<MessageModel>();
 
@@ -73,21 +73,19 @@ namespace Bills.Mail
                     string attachmentSubject = GetSubjectText(part.Headers);
                     string mimeType = part.MimeType;
 
-                    if (!attachmentTypes.Contains(mimeType))
+                    if (!attachmentTypes.Any(type => type.MimeType.Equals(mimeType)))
                     {
                         continue;
                     }
 
                     byte[] data = FetchAttachmentInBytes(messageId, attachmentId);
-
-                    FileModel file = new FileModel()
+                    if (data != null)
                     {
-                        Subject = attachmentSubject ?? "No subject",
-                        MimeType = mimeType,
-                        DataInBytes = data
-                    };
+                        AttachmentTypes attachmentType = AttachmentTypes.GetAttachmentTypeForMimeType(mimeType);
 
-                    messageModel.Files.Add(file);
+                        FileModel file = new FileModel(attachmentType, data);
+                        messageModel.Files.Add(file);
+                    }
                 }
 
                 messages.Add(messageModel);

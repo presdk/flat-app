@@ -1,4 +1,7 @@
-﻿namespace Bills.Mail
+﻿using System.Collections.Generic;
+using Bills.Models;
+
+namespace Bills.Mail
 {
     /// <summary>
     /// Helper class for mails
@@ -8,9 +11,9 @@
         /// <summary>
         /// Downloads messages according to the given strategy
         /// </summary>
-        /// <param name="filterQuery"></param>
-        /// <param name="attachmentTypes"></param>
-        /// <param name="folderName">the name of the folder to save messages to</param>
-        void DownloadMessages(string filterQuery, string[] attachmentTypes, string folderName);
+        /// <param name="mailFilterQuery">the mail filter query</param>
+        /// <param name="attachmentTypesFilter">the filter for attachment types</param>
+        /// <param name="outputFolderName">the name of the folder to save messages to</param>
+        bool DownloadMessages(string mailFilterQuery, IList<AttachmentTypes> attachmentTypesFilter, string outputFolderName);
     }
 }
