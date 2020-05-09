@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using Bills.Files;
-using Bills.Models;
+using Bills.Mail.Models;
 
 namespace Bills.Mail
 {

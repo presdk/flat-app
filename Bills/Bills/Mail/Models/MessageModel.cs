@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace Bills.Models
+namespace Bills.Mail.Models
 {
     /// <summary>
     /// The message model

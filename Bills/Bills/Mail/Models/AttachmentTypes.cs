@@ -1,4 +1,4 @@
-﻿namespace Bills.Models
+﻿namespace Bills.Mail.Models
 {
     /// <summary>
     /// The file attachment type

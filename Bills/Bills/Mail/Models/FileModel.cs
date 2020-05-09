@@ -1,6 +1,6 @@
 ﻿using System.Diagnostics;
 
-namespace Bills.Models
+namespace Bills.Mail.Models
 {
     /// <summary>
     /// The file model

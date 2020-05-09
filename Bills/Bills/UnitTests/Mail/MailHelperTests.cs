@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using Bills.Files;
 using Bills.Mail;
-using Bills.Models;
+using Bills.Mail.Models;
 using Moq;
 using Xunit;
 

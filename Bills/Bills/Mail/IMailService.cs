@@ -1,6 +1,6 @@
 ﻿
 using System.Collections.Generic;
-using Bills.Models;
+using Bills.Mail.Models;
 
 namespace Bills.Mail
 {

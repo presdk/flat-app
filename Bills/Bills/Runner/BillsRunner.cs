@@ -1,8 +1,8 @@
-﻿using System;
+﻿using Bills.Mail;
+using Bills.Mail.Models;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using Bills.Mail;
-using Bills.Models;
 
 namespace Bills.Runner
 {
