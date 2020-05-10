@@ -92,11 +92,11 @@ describe("Bill model", () => {
   });
 
   it("create bill generates reference", () => {
-    const bill = Bill({ type: BillType.Water, date: "01-01-20" });
+    const bill = Bill({ type: BillType.Water, date: "05-01-20" });
 
     bill.generateReference();
 
-    assert.equal("water-01-01-20", bill.reference_name);
+    assert.equal("w0120", bill.reference_name);
   });
 
   it("update payments does not add payments when user does not exist", () => {

@@ -16,7 +16,7 @@ const BillType = Object.freeze({
  * @property {string} date.required - The date of the issued bill in the format `dd-mm-yy`
  * @property {string} type.required - The type of the bill: `water` or `power` or `internet` or `misc`
  * @property {Number} total_amount.required - The total dollar amount of the bill
- * @property {string} reference_name - The  reference name to use for the payment of this bill
+ * @property {string} reference_name - The  reference name to use for the payment of this bill in the format `'<first letter of type><month><year>'`
  * @property {Boolean} is_admin_confirmed - True if the correctness of the bill has been confirmed by the admin
  * @property {Boolean} is_deleted - True if the bill has been deleted
  * @property {Array.<File>} files - Files attached to the bill
@@ -88,7 +88,12 @@ BillSchema.methods.updatePayments = function (updatedPayments) {
 
 // Generates the reference using the date and type
 BillSchema.methods.generateReference = function () {
-  this.reference_name = this.type + "-" + this.date;
+  const typeCode = this.type.substring(0,1);
+
+  const dateTokens = this.date.split('-');
+  const month = dateTokens[1];
+  const year = dateTokens[2];
+  this.reference_name = `${typeCode}${month}${year}`;
 };
 
 BillSchema.post("validate", function () {
