@@ -80,7 +80,7 @@ router.post("/add", async (req, res) => {
  * @route POST /bills/billId/update
  * @group Bills
  * @param {Boolean} is_admin_confirmed - True if the correctness of the bill has been confirmed by the admin
- * @param {Array.<Payment>} payments - The bill split payments
+ * @param {Array.<BillPayment>} payments - The bill split payments
  * @returns {Bill.model} 200 - A bill
  * @returns {object} 500 - Error
  */
