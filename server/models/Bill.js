@@ -45,8 +45,12 @@ const BillSchema = new Schema({
   payments: [BillPaymentSchema],
 });
 
-// Update the list of payments with the latest calculation
+// Calculate the amount to pay for each payment
 BillSchema.methods.calculatePayments = function () {
+  if (this.payments.length <= 0) {
+    return;
+  }
+
   const totalUsageInDays = this.payments
     .map((p) => p.usage_in_days)
     .reduce((a, b) => a + b);
