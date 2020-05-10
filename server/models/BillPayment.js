@@ -22,9 +22,25 @@ const BillPaymentSchema = new Schema({
     default: PaymentStatus.Unpaid,
     enum: Object.values(PaymentStatus),
   },
-  usage_in_days: { type: Number, required: true, min: [0, "Days must be a positive number"]  },
+  usage_in_days: {
+    type: Number,
+    required: true,
+    min: [0, "Days must be a positive number"],
+  },
   payable_amount: { type: Number, required: true },
 });
+
+// Updates the modifiable fields with updated bill payment
+BillPaymentSchema.methods.update = function (updatedPayment) {
+  const { status, usage_in_days } = updatedPayment;
+  if (status) {
+    this.status = status;
+  }
+
+  if (usage_in_days) {
+    this.usage_in_days = usage_in_days;
+  }
+};
 
 module.exports = {
   PaymentStatus: PaymentStatus,

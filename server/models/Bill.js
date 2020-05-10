@@ -63,6 +63,29 @@ BillSchema.methods.calculatePayments = function () {
   });
 };
 
+// Update the existing payments with changes or add as new payments
+BillSchema.methods.updatePayments = function (updatedPayments) {
+  let paymentsToSave = [];
+
+  updatedPayments.forEach((payment) => {
+    const { userId } = payment;
+
+    const existingPayment = this.payments.find(
+      (payment) => payment.userId == userId
+    );
+
+    if (existingPayment) {
+      // Update the existing payment
+      existingPayment.update(payment);
+      paymentsToSave.push(existingPayment);
+    } else {
+      paymentsToSave.push(payment);
+    }
+  });
+
+  this.payments = paymentsToSave;
+};
+
 // Generates the reference using the date and type
 BillSchema.methods.generateReference = function () {
   this.reference_name = this.type + "-" + this.date;
