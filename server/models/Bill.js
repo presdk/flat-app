@@ -16,7 +16,7 @@ const BillType = Object.freeze({
  * @property {string} date.required - The date of the issued bill in the format `dd-mm-yy`
  * @property {string} type.required - The type of the bill: `water` or `power` or `internet` or `misc`
  * @property {Number} total_amount.required - The total dollar amount of the bill
- * @property {string} reference_name - The  reference name to use for the payment of this bill
+ * @property {string} reference_name - The  reference name to use for the payment of this bill in the format `'<first letter of type><month><year>'`
  * @property {Boolean} is_admin_confirmed - True if the correctness of the bill has been confirmed by the admin
  * @property {Boolean} is_deleted - True if the bill has been deleted
  * @property {Array.<File>} files - Files attached to the bill
@@ -45,8 +45,12 @@ const BillSchema = new Schema({
   payments: [BillPaymentSchema],
 });
 
-// Update the list of payments with the latest calculation
+// Calculate the amount to pay for each payment
 BillSchema.methods.calculatePayments = function () {
+  if (this.payments.length <= 0) {
+    return;
+  }
+
   const totalUsageInDays = this.payments
     .map((p) => p.usage_in_days)
     .reduce((a, b) => a + b);
@@ -59,9 +63,37 @@ BillSchema.methods.calculatePayments = function () {
   });
 };
 
+// Update the existing payments with changes or add as new payments
+BillSchema.methods.updatePayments = function (updatedPayments) {
+  let paymentsToSave = [];
+
+  updatedPayments.forEach((payment) => {
+    const { userId } = payment;
+
+    const existingPayment = this.payments.find(
+      (payment) => payment.userId == userId
+    );
+
+    if (existingPayment) {
+      // Update the existing payment
+      existingPayment.update(payment);
+      paymentsToSave.push(existingPayment);
+    } else {
+      paymentsToSave.push(payment);
+    }
+  });
+
+  this.payments = paymentsToSave;
+};
+
 // Generates the reference using the date and type
 BillSchema.methods.generateReference = function () {
-  this.reference_name = this.type + "-" + this.date;
+  const typeCode = this.type.substring(0,1);
+
+  const dateTokens = this.date.split('-');
+  const month = dateTokens[1];
+  const year = dateTokens[2];
+  this.reference_name = `${typeCode}${month}${year}`;
 };
 
 BillSchema.post("validate", function () {

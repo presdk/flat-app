@@ -69,7 +69,7 @@ class AppTable extends React.Component {
                                     key={cell.key}
                                     align={cell.align}
                                 >
-                                    {entry[cell.key] ? (cell.render ? cell.render(entry[cell.key], entry) : entry[cell.key]) : null}
+                                    {(entry[cell.key] !== null) ? (cell.render ? cell.render(entry[cell.key], entry) : entry[cell.key]) : null}
                                 </TableCell>
                             )
                         })}

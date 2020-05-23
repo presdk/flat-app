@@ -1,56 +1,109 @@
 import React from 'react';
 import { connect } from 'react-redux';
 import axios from 'axios';
-import { Button, Checkbox } from '@material-ui/core';
+import { Button, Checkbox, Select, MenuItem } from '@material-ui/core';
 
 import * as selectors from '../../redux/selectors';
 
 import AppTable from '../../Components/table';
-
-const columns = [
-    { key: 'name', name: 'User', align: 'left' },
-    { key: 'usage_in_days', name: 'Period', align: 'left' },
-    { key: 'payable_amount', name: 'Amount', align: 'left', render: (cell, row) => { return `$${cell.toFixed(2)}` } }
-]
 
 class PageCreateBill extends React.Component {
     constructor(props) {
         super(props);
         this.state={
             bill_details: null,
-            users_details: null
+            disp_data: null
         }
     }
 
+    columns = [
+        { key: 'name', name: 'User', align: 'left' },
+        { key: 'usage_in_days', name: 'Period', align: 'left', render: (cell, row) => {return (row.key !== 'total') ? 
+            <Select 
+                value={cell}
+                onChange={(event) => this.handleRatioUpdate(event.target.value, row.index)}
+            >
+                {[...Array(32).keys()].map(i => {
+                    return (<MenuItem key={i} value={i}>{i}</MenuItem>)
+                })}
+            </Select>
+        :
+            cell
+        } },
+        { key: 'payable_amount', name: 'Amount', align: 'left', render: (cell, row) => { return `$${cell.toFixed(2)}` } }
+    ]
+
     handleUserSelect = index => {
-        let cpUsers = [...this.state.users_details];
-        cpUsers[index].selected = !cpUsers[index].selected;
-        this.setState({ users_details: cpUsers });
+        let cpDisp = [...this.state.disp_data];
+        cpDisp[index].is_selected = !cpDisp[index].is_selected;
+        this.setState({ disp_data: this.calculatePayable(cpDisp) });
+    }
+
+    handleRatioUpdate = (value, index) => {
+        let cpDisp = [...this.state.disp_data];
+        cpDisp[index].usage_in_days = value;
+        this.setState({ disp_data: this.calculatePayable(cpDisp) });
+    }
+
+    calculatePayable = users => {
+        let cpUsers = [...users]
+        let denom = 0;
+        cpUsers.forEach(user => {
+            if (user.is_selected) {
+                denom += user.usage_in_days;
+            }
+        })
+        cpUsers.forEach(user => {
+            if (user.is_selected && (denom !== 0)) {
+                user.payable_amount = this.state.bill_details.total_amount * user.usage_in_days / denom;
+            } else {
+                user.payable_amount = 0;
+            }
+        })
+        return cpUsers
+    }
+
+    getTotals = data => {
+        let total_usage = 0;
+        let total_amount = 0;
+        data.forEach(user => {
+            total_usage += user.usage_in_days;
+            // The following is calulated this way to return to the adminh an amount that does not cause confusion about an unexplainable cent
+            total_amount += parseFloat(user.payable_amount.toFixed(2));
+        });
+        data.push({
+            key: 'total',
+            _id: 'total',
+            name: 'Total',
+            usage_in_days: total_usage,
+            payable_amount: total_amount
+        });
+        return data
     }
 
     componentDidMount() {
         axios.get(`http://localhost:4000/bills/${this.props.location.state.bill_id}`).then(b_res => {
             axios.get('http://localhost:4000/users').then(u_res => { 
-                var i = 0;
-                let prebilled_users = [];
-                b_res.data.payments.forEach(payment => {
-                    payment.index = i;
-                    i++;
-                    prebilled_users.push(payment.userId);
-                    const found_user = u_res.data.filter(user => {
-                        return user._id === payment.userId
-                    });
-                    if (Array.isArray(found_user) && found_user.length) {
-                        payment.name = found_user[0].name;
+                let temp = {};
+                u_res.data.forEach(user => {
+                    temp[user._id] = {
+                        key: user._id,
+                        name: user.name,
+                        usage_in_days: 0,
+                        payable_amount: 0,
+                        is_selected: false
                     }
                 });
-                i = 0;
-                u_res.data.forEach(user => {
-                    user.index = i;
-                    i++;
-                    user.selected = prebilled_users.includes(user._id);
-                });
-                this.setState({ bill_details: b_res.data, users_details: u_res.data });
+                b_res.data.payments.forEach(payment => {
+                    temp[payment.userId] = {...temp[payment.userId], ...payment, is_selected: true}
+                })
+                var index = 0;
+                const disp_data = Object.keys(temp).map(user_id => {
+                    temp[user_id].index = index;
+                    index++;
+                    return temp[user_id]
+                })
+                this.setState({ bill_details: b_res.data, disp_data: disp_data });
             });
         });
     }
@@ -58,6 +111,7 @@ class PageCreateBill extends React.Component {
     render() {
         if (this.state.bill_details) {
             const bill = {...this.state.bill_details};
+            const disp = [...this.state.disp_data];
             return (
                 <div>
                     <p>
@@ -72,11 +126,11 @@ class PageCreateBill extends React.Component {
                         <a href='http://localhost:4000' target='_blank' rel="noopener noreferrer">See original</a>
                     </p> 
                     <div>
-                        {this.state.users_details.map(user => {
+                        {disp.map(user => {
                             return (
-                                <p key={user._id}>
+                                <p key={user.key}>
                                     <Checkbox 
-                                        checked={user.selected}
+                                        checked={user.is_selected}
                                         onChange={() => this.handleUserSelect(user.index)}
                                     /> {user.name}
                                 </p>
@@ -84,8 +138,10 @@ class PageCreateBill extends React.Component {
                         })}
                     </div>
                     <AppTable 
-                        columns={columns}
-                        data={bill.payments}
+                        columns={this.columns}
+                        data={this.getTotals(disp.filter(entry => {
+                            return entry.is_selected === true
+                        }))}
                     />
                     <Button
                         color='primary'

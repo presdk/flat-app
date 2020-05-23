@@ -1,7 +1,19 @@
 const assert = require("assert");
 const { Bill, BillType } = require("../../models/Bill");
+const { BillPayment } = require("../../models/BillPayment");
+const { User } = require("../../models/User");
+const sinon = require("sinon");
+const mongoose = require("mongoose");
 
 describe("Bill model", () => {
+  const userStub = sinon.stub(User, "findById");
+  const User1Id = "5eb74cca2ae20907b147cb21";
+  const User2Id = "5eb74cca2ae20907b147cb22";
+
+  beforeEach(function () {
+    userStub.restore();
+  });
+
   it("create bill has errors without req fields", () => {
     const bill = Bill();
 
@@ -80,10 +92,134 @@ describe("Bill model", () => {
   });
 
   it("create bill generates reference", () => {
-    const billPayment = Bill({ type: BillType.Water, date: "01-01-20" });
+    const bill = Bill({ type: BillType.Water, date: "05-01-20" });
 
-    billPayment.generateReference();
+    bill.generateReference();
 
-    assert.equal("water-01-01-20", billPayment.reference_name);
+    assert.equal("w0120", bill.reference_name);
+  });
+
+  it("update payments does not add payments when user does not exist", () => {
+    userStub.returns({
+      exec: () => {
+        throw Error("user does not exist");
+      },
+    });
+    const expectedError = `Could not fetch user with id: ${User1Id} with error: user does not exist`;
+
+    const bill = Bill();
+
+    const updatedPayments = [
+      {
+        userId: User1Id,
+        status: "unpaid",
+      },
+    ];
+
+    try {
+      bill.updatePayments(updatedPayments);
+    } catch (err) {
+      assert.equal(expectedError, err.message);
+    }
+  });
+
+  it("update payments adds new payments when payment does not exist", () => {
+    const user1 = User({ _id: User1Id });
+
+    userStub.returns({
+      exec: () => {
+        return user1;
+      },
+    });
+
+    const bill = Bill();
+
+    const updatedPayments = [
+      {
+        userId: User1Id,
+        usage_in_days: 10,
+      },
+    ];
+
+    try {
+      bill.updatePayments(updatedPayments);
+    } catch (err) {}
+
+    assert.equal(1, bill.payments.length);
+
+    const payment = bill.payments[0];
+    assert.equal(User1Id, payment.userId);
+    assert.equal(10, payment.usage_in_days);
+  });
+
+  it("update payments when payments are existing", () => {
+    const user1 = User({ _id: User1Id });
+    const user2 = User({ _id: User2Id });
+
+    userStub.callsFake(() => {
+      {
+        exec: (userId) => {
+          if (userId == User1Id) {
+            return user1;
+          }
+          if (userId == User2Id) {
+            return user2;
+          }
+        };
+      }
+    });
+
+    const bill = Bill();
+    const existingPayment1 = BillPayment({ userId: User1Id, usage_in_days: 1 });
+    const existingPayment2 = BillPayment({ userId: User2Id, usage_in_days: 2 });
+    bill.payments.push(existingPayment1);
+    bill.payments.push(existingPayment2);
+
+    const updatedPayments = [
+      {
+        userId: User1Id,
+        usage_in_days: 11,
+      },
+      {
+        userId: User2Id,
+        usage_in_days: 12,
+      }
+    ];
+
+    try {
+      bill.updatePayments(updatedPayments);
+    } catch (err) {}
+
+    assert.equal(2, bill.payments.length);
+
+    const payment1 = bill.payments.find(payment => payment.userId == User1Id);
+    assert(payment1 != null);
+    assert.equal(11, payment1.usage_in_days);
+
+    const payment2 = bill.payments.find(payment => payment.userId == User2Id);
+    assert(payment2 != null);
+    assert.equal(12, payment2.usage_in_days);
+  });
+
+  it("update payments removes payments that are missing from the updated payments", () => {
+    const user1 = User({ _id: User1Id });
+
+    userStub.callsFake(() => {
+      {
+        exec: () => user1;
+      }
+    });
+
+    const bill = Bill();
+    const existingPayment1 = BillPayment({ userId: User1Id, usage_in_days: 1 });
+    bill.payments.push(existingPayment1);
+
+    const updatedPayments = [];
+
+    try {
+      bill.updatePayments(updatedPayments);
+    } catch (err) {}
+
+    assert.equal(0, bill.payments.length);
   });
 });
