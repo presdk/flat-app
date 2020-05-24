@@ -25,7 +25,7 @@ namespace Bills.UnitTests.DocumentParser
         public void FromTextHasCorrectBillFieldsForPowerBill(string billText, 
             int day, int month, int year, BillType billType, double amount)
         {
-            Bill powerBill = this.powerBillParser.ParseBill(billText);
+            Bill powerBill = this.powerBillParser.ParseFromText(billText);
 
             Assert.Equal(day, powerBill.Day);
             Assert.Equal(month, powerBill.Month);

@@ -8,6 +8,8 @@ using Bills.Runner;
 using Google.Apis.Auth.OAuth2;
 using Google.Apis.Gmail.v1;
 using Google.Apis.Util.Store;
+using iText.Kernel.Pdf;
+using PDFIndexer.Utils;
 
 namespace Bills
 {
@@ -35,16 +37,16 @@ namespace Bills
             string logFilePath = Path.Join(Directory.GetCurrentDirectory(), LogFileName);
             Trace.Listeners.Add(new TextWriterTraceListener(File.AppendText(logFilePath), "traceListener"));
 
-            UserCredential credential = CreateCredentials(); 
+            //UserCredential credential = CreateCredentials(); 
 
             try
             {
-                IFileStore fileStore = new FileStore(downloadPath);
-                IMailService mailService = MailService.CreateConnection(credential);
-                IMailHelper mailHelper = new MailHelper(mailService, fileStore);
+                //IFileStore fileStore = new FileStore(downloadPath);
+                //IMailService mailService = MailService.CreateConnection(credential);
+                //IMailHelper mailHelper = new MailHelper(mailService, fileStore);
 
-                IBillsRunner runner = new BillsRunner(mailHelper);
-                runner.Start();
+                //IBillsRunner runner = new BillsRunner(mailHelper);
+                //runner.Start();
             }
             catch (Exception ex)
             {
