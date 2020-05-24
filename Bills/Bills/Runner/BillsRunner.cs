@@ -31,9 +31,9 @@ namespace Bills.Runner
             Trace.WriteLine($"Bills runner started on date: {today.ToLongDateString()} at time: {today.ToShortTimeString()}");
 
             // TODO: Download pdf for internet
-            // TODO: Download pdf for water
             List<AttachmentTypes> allowedAttachmentTypes = new List<AttachmentTypes>(){AttachmentTypes.Pdf};
-            this.mailHelper.DownloadMessages("subject:trustpower", allowedAttachmentTypes, "power");
+            this.mailHelper.DownloadMessages("label:power", allowedAttachmentTypes, "power");
+            this.mailHelper.DownloadMessages("label:water", allowedAttachmentTypes, "water");
 
             Trace.WriteLine("Runner has ended gracefully");
             Trace.WriteLine("=====================================================================");

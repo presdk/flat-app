@@ -23,17 +23,23 @@ namespace Bills
 
         public static void Main(string[] args)
         {
-            string currentDirectory = Directory.GetCurrentDirectory();
-            IFileStore fileStore = new FileStore(currentDirectory);
+            if (args.Length < 1)
+            {
+                Trace.WriteLine("Missing the first command line argument for pdf download path.");
+                return;
+            }
 
-            fileStore.CreateFile(LogFileName);
-            string logFilePath = Path.Join(currentDirectory, LogFileName);
+            string downloadPath = args[0];
+
+            // Set up log file
+            string logFilePath = Path.Join(Directory.GetCurrentDirectory(), LogFileName);
             Trace.Listeners.Add(new TextWriterTraceListener(File.AppendText(logFilePath), "traceListener"));
 
             UserCredential credential = CreateCredentials(); 
 
             try
             {
+                IFileStore fileStore = new FileStore(downloadPath);
                 IMailService mailService = MailService.CreateConnection(credential);
                 IMailHelper mailHelper = new MailHelper(mailService, fileStore);
 

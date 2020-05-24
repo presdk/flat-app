@@ -17,11 +17,5 @@
         /// </summary>
         /// <param name="directoryName">the directory path</param>
         void CreateDirectory(string directoryName);
-
-        /// <summary>
-        /// Create a file if it doesn't exist
-        /// </summary>
-        /// <param name="fileName">the file name</param>
-        void CreateFile(string fileName);
     }
 }

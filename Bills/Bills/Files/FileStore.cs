@@ -36,7 +36,7 @@ namespace Bills.Files
         }
 
         /// <inheritdoc />
-        public void CreateFile(string fileName)
+        public void OpenOrCreateFile(string fileName)
         {
             string filePath = Path.Join(this.directoryPath, fileName);
             if (!File.Exists(filePath))
