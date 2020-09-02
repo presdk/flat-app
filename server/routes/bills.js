@@ -46,18 +46,18 @@ router.get("/:billId/", async (req, res) => {
  * @returns {Bill.model} 200 - A bill
  * @returns {object} 500 - Error
  */
-router.post("/add", async (req, res) => {
+router.post("/add", async (req, res, next) => {
   try {
-    const activeUsers = await User.getActiveUsers();
 
-    if (activeUsers.length <= 0) {
-      throw Error("No users exist to create the bill");
+    // Prevent duplicate bills
+    const bill = Bill(req.body);
+    const existingBill = await Bill.exists({date: bill.date, type: bill.type});
+    if (existingBill) {
+      throw new Error(`Bill dated: ${bill.date} of type: ${bill.type} already exists`);
     }
-
-    const newEntry = req.body;
-    const bill = Bill(newEntry);
-
+    
     // Add bill payments for each active user
+    const activeUsers = await User.getActiveUsers();
     activeUsers.forEach((user) => {
       const payment = BillPayment({
         userId: user._id,
@@ -68,11 +68,9 @@ router.post("/add", async (req, res) => {
       bill.payments.push(payment);
     });
 
-    await bill.save();
-    res.send(bill);
+    await bill.save().then(bill => res.send(bill));
   } catch (err) {
-    console.log(err);
-    res.status(500).send(err);
+    next(err);
   }
 });
 
@@ -84,7 +82,7 @@ router.post("/add", async (req, res) => {
  * @returns {Bill.model} 200 - A bill
  * @returns {object} 500 - Error
  */
-router.post("/:billId/update", async (req, res) => {
+router.post("/:billId/update", async (req, res, next) => {
   const { billId } = req.params;
   const { is_admin_confirmed, payments } = req.body;
   
@@ -99,11 +97,9 @@ router.post("/:billId/update", async (req, res) => {
       bill.updatePayments(payments);
     }
 
-    await bill.save();
-    res.send(bill);
+    await bill.save().then(bill => res.send(bill));
   } catch (err) {
-    console.log(err);
-    res.status(500).send(err);
+    next(err);
   }
 });
 
@@ -115,7 +111,7 @@ router.post("/:billId/update", async (req, res) => {
  * @returns {Bill.model} 200 - A bill
  * @returns {object} 500 - Error
  */
-router.post("/:billId/:userId/update", async (req, res) => {
+router.post("/:billId/:userId/update", async (req, res, next) => {
   const { billId, userId } = req.params;
   const { status, usage_in_days } = req.body;
 
@@ -123,25 +119,21 @@ router.post("/:billId/:userId/update", async (req, res) => {
     const bill = await Bill.findById(billId).exec();
 
     const payment = bill.payments.find((p) => p.userId == userId);
-
     if (payment == null) {
-      res.status(500).send(`User id: ${userId} was not found from bill`);
-      return;
+      throw new Error(`User id: ${userId} was not found from bill`);
     }
 
-    if (usage_in_days != null) {
+    if (usage_in_days) {
       payment.usage_in_days = usage_in_days;
     }
 
-    if (status != null) {
+    if (status) {
       payment.status = status;
     }
 
-    await bill.save();
-    res.send(bill);
+    await bill.save().then(bil => res.send(bill));
   } catch (err) {
-    console.log(err);
-    res.status(500).send(err);
+    next(err);
   }
 });
 
@@ -151,11 +143,10 @@ router.post("/:billId/:userId/update", async (req, res) => {
  * @returns {object} 200 - Success
  * @returns {object} 500 - Error
  */
-router.post("/:billId/delete", async (req, res) => {
-  console.log(req.params.billId);
+router.post("/:billId/delete", async (req, res, next) => {
   await Bill.deleteOne({ _id: req.params.billId }, (err) => {
     if (err) {
-      res.sendStatus(500);
+      next(err);
     } else {
       res.sendStatus(200);
     }
