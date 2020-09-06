@@ -1,20 +1,16 @@
-﻿using Bills.DocumentParser;
-using Bills.DocumentParser.Models;
+﻿using Bills.DocumentParser.Models;
 using Xunit;
 
 namespace Bills.UnitTests.DocumentParser
 {
-    public class WaterBillParserTests
+    public class WaterBillTests
     {
-        private readonly WaterBillParser waterBillParser;
-
         public void Dispose()
         {
         }
 
-        public WaterBillParserTests()
+        public WaterBillTests()
         {
-            this.waterBillParser = new WaterBillParser();
         }
 
         [Theory]
@@ -24,13 +20,13 @@ namespace Bills.UnitTests.DocumentParser
         public void FromTextHasCorrectBillFieldsForPowerBill(string billText,
             int day, int month, int year, BillType billType, double amount)
         {
-            Bill powerBill = this.waterBillParser.ParseFromText(billText);
+            BillBase waterBill = BillBase.CreateBill(BillType.Water, billText);
 
-            Assert.Equal(day, powerBill.Day);
-            Assert.Equal(month, powerBill.Month);
-            Assert.Equal(year, powerBill.Year);
-            Assert.Equal(billType, powerBill.BillType);
-            Assert.Equal(amount, powerBill.Amount);
+            Assert.Equal(day, waterBill.Day);
+            Assert.Equal(month, waterBill.Month);
+            Assert.Equal(year, waterBill.Year);
+            Assert.Equal(billType, waterBill.BillType);
+            Assert.Equal(amount, waterBill.Amount);
         }
 
         #region Test Data

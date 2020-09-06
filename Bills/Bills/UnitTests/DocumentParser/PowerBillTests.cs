@@ -5,17 +5,14 @@ using Xunit;
 
 namespace Bills.UnitTests.DocumentParser
 {
-    public class PowerBillParserTests : IDisposable
+    public class PowerBillTests : IDisposable
     {
-        private readonly PowerBillParser powerBillParser;
-
         public void Dispose()
         {
         }
 
-        public PowerBillParserTests()
+        public PowerBillTests()
         {
-            this.powerBillParser = new PowerBillParser();
         }
 
         [Theory]
@@ -25,7 +22,7 @@ namespace Bills.UnitTests.DocumentParser
         public void FromTextHasCorrectBillFieldsForPowerBill(string billText, 
             int day, int month, int year, BillType billType, double amount)
         {
-            Bill powerBill = this.powerBillParser.ParseFromText(billText);
+            BillBase powerBill = BillBase.CreateBill(BillType.Power, billText);
 
             Assert.Equal(day, powerBill.Day);
             Assert.Equal(month, powerBill.Month);

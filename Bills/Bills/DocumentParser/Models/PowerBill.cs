@@ -1,11 +1,16 @@
 ﻿using System.Text.RegularExpressions;
-using Bills.DocumentParser.Models;
 
-namespace Bills.DocumentParser
+namespace Bills.DocumentParser.Models
 {
-    public sealed class PowerBillParser : BillParserBase
+    public sealed class PowerBill : BillBase
     {
-        protected override BillType BillType => BillType.Power;
+        public PowerBill()
+        {
+        }
+
+        public static string FolderPath => "power";
+
+        public override BillType BillType => BillType.Power;
 
         protected override Regex AmountMatcher => new Regex(@"(?:Total due.*)(?:\$)(\d+.\d+)");
 

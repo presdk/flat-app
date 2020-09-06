@@ -15,6 +15,8 @@ namespace Bills.Mail
     public class MailService : IMailService
     {
         private static readonly string ApplicationName = "flat";
+        private const string PdfMimeType = "application/pdf";
+        private const string PdfFileExtension = ".pdf";
 
         private readonly GmailService service;
 
@@ -40,18 +42,13 @@ namespace Bills.Mail
         }
 
         /// <inheritdoc />
-        public IList<MessageModel> GetMessages(string filterQuery, IList<AttachmentTypes> attachmentTypes)
+        public IEnumerable<MultiFileMessage> GetPdfMessagesByFilter(string filterQuery)
         {
-            IList<MessageModel> messages = new List<MessageModel>();
-
-            IList<Message> messageInfos = FetchMessagesInfo(filterQuery);
-            foreach (Message info in messageInfos)
+            IList<Message> messageInfos = RetrieveMessagesInfoByFilter(filterQuery);
+            foreach (Message msgInfo in messageInfos)
             {
-                string messageId = info.Id;
-
-                Message message = FetchMessage(messageId);
-
-                MessageModel messageModel = new MessageModel()
+                Message message = RetrieveMessageById(msgInfo.Id);
+                MultiFileMessage multiFileMessage = new MultiFileMessage()
                 {
                     Subject = GetSubjectText(message.Payload.Headers)
                 };
@@ -70,31 +67,43 @@ namespace Bills.Mail
                         continue;
                     }
 
-                    string attachmentSubject = GetSubjectText(part.Headers);
-                    string mimeType = part.MimeType;
-
-                    if (!attachmentTypes.Any(type => type.MimeType.Equals(mimeType)))
+                    if (!part.MimeType.Equals(PdfMimeType))
                     {
                         continue;
                     }
 
-                    byte[] data = FetchAttachmentInBytes(messageId, attachmentId);
+                    byte[] data = RetrieveFileById(msgInfo.Id, attachmentId);
                     if (data != null)
                     {
-                        AttachmentTypes attachmentType = AttachmentTypes.GetAttachmentTypeForMimeType(mimeType);
-
-                        FileModel file = new FileModel(attachmentType, data);
-                        messageModel.Files.Add(file);
+                        FileModel fileModel = new FileModel(part.Filename, data);
+                        multiFileMessage.Files.Add(fileModel);
                     }
                 }
 
-                messages.Add(messageModel);
+                yield return multiFileMessage;
             }
-
-            return messages;
         }
 
-        private byte[] FetchAttachmentInBytes(string messageId, string attachmentId)
+        private IList<Message> RetrieveMessagesInfoByFilter(string filterQuery)
+        {
+            UsersResource.MessagesResource.ListRequest request = this.service.Users.Messages.List("me");
+            request.Q = filterQuery;
+
+            ListMessagesResponse res = request.Execute();
+
+            return res.Messages;
+        }
+
+        private Message RetrieveMessageById(string messageId)
+        {
+            UsersResource.MessagesResource.GetRequest msg = this.service.Users.Messages.Get("me", messageId);
+            msg.Format = UsersResource.MessagesResource.GetRequest.FormatEnum.Full;
+
+            Message retrievedMsg = msg.Execute();
+            return retrievedMsg;
+        }
+
+        private byte[] RetrieveFileById(string messageId, string attachmentId)
         {
             MessagePartBody attachment = service.Users.Messages.Attachments
                 .Get("me", messageId, attachmentId).Execute();
@@ -112,25 +121,6 @@ namespace Bills.Mail
 
             Trace.WriteLine($"Failed to fetch attachment for message id: {messageId} and attachment id: {attachmentId}");
             return null;
-        }
-
-        private Message FetchMessage(string messageId)
-        {
-            UsersResource.MessagesResource.GetRequest msg = this.service.Users.Messages.Get("me", messageId);
-            msg.Format = UsersResource.MessagesResource.GetRequest.FormatEnum.Full;
-
-            Message retrievedMsg = msg.Execute();
-            return retrievedMsg;
-        }
-
-        private IList<Message> FetchMessagesInfo(string filterQuery)
-        {
-            UsersResource.MessagesResource.ListRequest request = this.service.Users.Messages.List("me");
-            request.Q = filterQuery;
-
-            ListMessagesResponse res = request.Execute();
-
-            return res.Messages;
         }
 
         private static string GetSubjectText(ICollection<MessagePartHeader> headers)

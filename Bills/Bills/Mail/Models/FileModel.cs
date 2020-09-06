@@ -1,34 +1,30 @@
-﻿using System.Diagnostics;
+﻿using System;
+using System.Collections.Generic;
+using System.Text;
 
 namespace Bills.Mail.Models
 {
-    /// <summary>
-    /// The file model
-    /// </summary>
     public class FileModel
     {
         /// <summary>
-        /// Constructor for the file model
+        /// the constructor for the file model
         /// </summary>
-        /// <param name="attachmentType">the attachment type</param>
-        /// <param name="dataInBytes">the data in bytes</param>
-        public FileModel(AttachmentTypes attachmentType, byte[] dataInBytes)
+        /// <param name="fileName">the file name</param>
+        /// <param name="contents">the contents in bytes</param>
+        public FileModel(string fileName, byte[] contents)
         {
-            Debug.Assert(attachmentType != null);
-            Debug.Assert(dataInBytes != null && dataInBytes.Length > 0);
-
-            this.AttachmentType = attachmentType;
-            this.DataInBytes = dataInBytes;
+            this.FileName = fileName;
+            this.Contents = contents;
         }
 
         /// <summary>
-        /// The mime type
+        /// The file name
         /// </summary>
-        public AttachmentTypes AttachmentType { get; }
+        public string FileName { get; }
 
         /// <summary>
-        /// The data encoded in base 64
+        /// The contents in bytes
         /// </summary>
-        public byte[] DataInBytes { get; }
+        public byte[] Contents { get; }
     }
 }

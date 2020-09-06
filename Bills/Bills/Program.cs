@@ -1,27 +1,20 @@
 ﻿using System;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Threading;
-using Bills.Files;
 using Bills.Mail;
 using Bills.Runner;
 using Google.Apis.Auth.OAuth2;
 using Google.Apis.Gmail.v1;
 using Google.Apis.Util.Store;
-using iText.Kernel.Pdf;
-using PDFIndexer.Utils;
 
 namespace Bills
 {
     public class Program
     {
-        private static readonly string[] MailAccessScopes =
-        {
-            GmailService.Scope.GmailReadonly, GmailService.Scope.MailGoogleCom, GmailService.Scope.GmailModify,
-            GmailService.Scope.GmailSettingsBasic
-        };
-
-        private static readonly string LogFileName = "log.txt";
+        private const string ProcessAllFlag = "--all";
+        private const string ClearAllFlag = "--clear";
 
         public static void Main(string[] args)
         {
@@ -31,26 +24,37 @@ namespace Bills
                 return;
             }
 
-            string downloadPath = args[0];
+            string downloadDirectory = args[0];
+            if (string.IsNullOrEmpty(downloadDirectory))
+            {
+                Trace.WriteLine("Missing the first command line argument for pdf download path.");
+                return;
+            }
 
             // Set up log file
-            string logFilePath = Path.Join(Directory.GetCurrentDirectory(), LogFileName);
-            Trace.Listeners.Add(new TextWriterTraceListener(File.AppendText(logFilePath), "traceListener"));
+            string logsPath = Path.Combine(downloadDirectory, "log.txt");
+            string logsDirectory = Path.GetDirectoryName(logsPath);
+            if (!Directory.Exists(logsDirectory))
+            {
+                Directory.CreateDirectory(logsDirectory);
+            }
 
-            //UserCredential credential = CreateCredentials(); 
+            Trace.Listeners.Add(new TextWriterTraceListener(File.AppendText(logsPath), "traceListener"));
 
             try
             {
-                //IFileStore fileStore = new FileStore(downloadPath);
-                //IMailService mailService = MailService.CreateConnection(credential);
-                //IMailHelper mailHelper = new MailHelper(mailService, fileStore);
+                UserCredential credential = CreateCredentials();
+                IMailService mailService = MailService.CreateConnection(credential);
+                IFileManager fileManager = new FileManager(downloadDirectory);
+                BillsRunner runner = new BillsRunner(mailService, fileManager);
 
-                //IBillsRunner runner = new BillsRunner(mailHelper);
-                //runner.Start();
+                bool processNewOnly = !args.Contains(ProcessAllFlag);
+                bool clearAllLocalBills = args.Contains(ClearAllFlag);
+                runner.Process(processNewOnly, clearAllLocalBills);
             }
             catch (Exception ex)
             {
-                Trace.WriteLine(ex.Message);
+                Trace.WriteLine(ex);
             }
 
             Trace.Flush();
@@ -58,8 +62,13 @@ namespace Bills
 
         private static UserCredential CreateCredentials()
         {
-            UserCredential credential = null;
+            string[] mailAccessScopes =
+            {
+                GmailService.Scope.GmailReadonly, GmailService.Scope.MailGoogleCom, GmailService.Scope.GmailModify,
+                GmailService.Scope.GmailSettingsBasic
+            };
 
+            UserCredential credential;
             using (FileStream stream = new FileStream("credentials.json", FileMode.Open, FileAccess.Read))
             {
                 // The file token.json stores the user's access and refresh tokens, and is created
@@ -67,7 +76,7 @@ namespace Bills
                 string credPath = "token.json";
                 credential = GoogleWebAuthorizationBroker.AuthorizeAsync(
                     GoogleClientSecrets.Load(stream).Secrets,
-                    MailAccessScopes,
+                    mailAccessScopes,
                     "user",
                     CancellationToken.None,
                     new FileDataStore(credPath, true)).Result;
