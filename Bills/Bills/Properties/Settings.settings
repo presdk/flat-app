@@ -1,0 +1,9 @@
+﻿<?xml version='1.0' encoding='utf-8'?>
+<SettingsFile xmlns="http://schemas.microsoft.com/VisualStudio/2004/01/settings" CurrentProfile="(Default)" GeneratedClassNamespace="Bills.Properties" GeneratedClassName="Settings">
+  <Profiles />
+  <Settings>
+    <Setting Name="BillsAddApi" Type="System.String" Scope="User">
+      <Value Profile="(Default)">http://localhost:4000/bills/add/</Value>
+    </Setting>
+  </Settings>
+</SettingsFile>

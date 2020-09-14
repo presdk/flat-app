@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading;
+using Bills.BillsServerApi;
 using Bills.Mail;
 using Bills.Runner;
 using Google.Apis.Auth.OAuth2;
@@ -46,7 +47,8 @@ namespace Bills
                 UserCredential credential = CreateCredentials();
                 IMailService mailService = MailService.CreateConnection(credential);
                 IFileManager fileManager = new FileManager(downloadDirectory);
-                BillsRunner runner = new BillsRunner(mailService, fileManager);
+                IBillsServerApi serverApi = new BillsServerApi.BillsServerApi();
+                BillsRunner runner = new BillsRunner(mailService, fileManager, serverApi);
 
                 bool processNewOnly = !args.Contains(ProcessAllFlag);
                 bool clearAllLocalBills = args.Contains(ClearAllFlag);

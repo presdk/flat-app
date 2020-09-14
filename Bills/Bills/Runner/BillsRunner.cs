@@ -5,6 +5,8 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Net;
+using Bills.BillsServerApi;
 using Bills.DocumentParser.Models;
 using Castle.DynamicProxy.Generators.Emitters.SimpleAST;
 using iText.Kernel.Pdf;
@@ -20,19 +22,23 @@ namespace Bills.Runner
     {
         private readonly IFileManager fileManager;
         private readonly IMailService mailService;
+        private readonly IBillsServerApi billsApi;
 
         /// <summary>
         /// The constructor for the bills runner
         /// </summary>
-        /// <param name="mailService"></param>
+        /// <param name="mailService">the mail server</param>
         /// <param name="fileManager">the mail helper</param>
-        public BillsRunner(IMailService mailService, IFileManager fileManager)
+        /// <param name="billsApi">the bills server api</param>
+        public BillsRunner(IMailService mailService, IFileManager fileManager, IBillsServerApi billsApi)
         {
             Debug.Assert(mailService != null);
             Debug.Assert(fileManager != null);
+            Debug.Assert(billsApi != null);
 
             this.fileManager = fileManager;
             this.mailService = mailService;
+            this.billsApi = billsApi;
         }
 
         /// <summary>
@@ -60,13 +66,8 @@ namespace Bills.Runner
             IEnumerable<BillBase> powerBills = GenerateBills(powerMessages, BillType.Power, PowerBill.FolderPath);
             IEnumerable<BillBase> waterBills = GenerateBills(waterMessages, BillType.Water, WaterBill.FolderPath);
 
-            Trace.WriteLine("Printing power bills...");
-            PrintBills(powerBills);
-            Trace.WriteLine("Finished printing power bills...");
-
-            Trace.WriteLine("Printing water bills...");
-            PrintBills(waterBills);
-            Trace.WriteLine("Finished printing water bills...");
+            UploadBills(powerBills, BillType.Power);
+            UploadBills(waterBills, BillType.Water);
 
             Trace.WriteLine("Runner has ended gracefully");
             Trace.WriteLine("=====================================================================");
@@ -106,12 +107,44 @@ namespace Bills.Runner
             }
         }
 
-        private void PrintBills(IEnumerable<BillBase> bills)
+        private void UploadBills(IEnumerable<BillBase> bills, BillType billType)
         {
+            Trace.WriteLine(string.Format("Uploading bills for type: {0}", billType.ToString()));
+
             foreach (BillBase bill in bills)
             {
-                Trace.WriteLine("\t" + bill);
+                Trace.WriteLine(string.Format("\tUploading bill: {0}", bill));
+
+                string date = string.Format("{0:D2}-{1:D2}-{2:D4}", bill.Day, bill.Month, bill.Year);
+                string type;
+                switch (bill.BillType)
+                {
+                    case BillType.Water:
+                        type = "water";
+                        break;
+                    case BillType.Internet:
+                        type = "internet";
+                        break;
+                    case BillType.Power:
+                        type = "power";
+                        break;
+                    default:
+                        Debug.Assert(false, "Unsupported type");
+                        return;
+                }
+
+                CreateBillResponse billResponse = this.billsApi.CreateBill(date, type, bill.Amount);
+                if (billResponse.IsSuccess)
+                {
+                    Trace.WriteLine("\t\t[SUCCESS]");
+                }
+                else
+                {
+                    Trace.WriteLine(string.Format("\t\t[FAILED] Reason: {0}", billResponse.ErrorMessage));
+                }
             }
+
+            Trace.WriteLine(string.Format("Finished uploading bills for type: {0}", billType.ToString()));
         }
     }
 }
