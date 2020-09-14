@@ -93,7 +93,7 @@ BillSchema.methods.generateReference = function () {
   const dateTokens = this.date.split('-');
   const month = dateTokens[1];
   const year = dateTokens[2];
-  this.reference_name = `${typeCode}${month}${year}`;
+  this.reference_name = `${typeCode}${month}${year.substring(2)}`;
 };
 
 BillSchema.post("validate", function () {
