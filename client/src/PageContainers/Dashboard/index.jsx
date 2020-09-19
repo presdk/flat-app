@@ -81,7 +81,7 @@ class PageDashboard extends React.Component {
         }
     }
 
-    unconfirmed_columns = (this.props.user && this.props.user.type === 'admin') ? [
+    unconfirmed_columns = (this.props.currentUser && this.props.currentUser.type === 'admin') ? [
         { key: 'date', name: 'Date', align: 'left', render: (cell, row) => this.renderBillRedirect('create', cell, row) },
         { key: 'type', name: 'Type', align: 'left' },
         { key: 'total_amount', name: 'Billed', align: 'left' }
@@ -112,7 +112,7 @@ class PageDashboard extends React.Component {
         return cell.map(payment => {
             return (
                 <StatusSelector 
-                    user_type={this.props.user.type}
+                    user_type={this.props.currentUser.type}
                     payment={payment}
                     handleStatusChange={(new_val, user_id) => this.handleStatusChange(new_val, user_id, row)}
                 />
@@ -144,12 +144,12 @@ class PageDashboard extends React.Component {
         axios.get('http://localhost:4000/bills').then(b_res => {
             axios.get('http://localhost:4000/users').then(u_res => {
                 var i = 0;
-                if (this.props.user && (this.props.user.type === 'user')) {
+                if (this.props.currentUser && (this.props.currentUser.type === 'user')) {
                     b_res.data.forEach(item => {
                         item.index = i;
                         i++;
                         item.payments.forEach(userItem => {
-                            if (userItem.userId === this.props.user._id) {
+                            if (userItem.userId === this.props.currentUser._id) {
                                 item.payments = [userItem];
                             }
                         });

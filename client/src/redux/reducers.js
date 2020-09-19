@@ -2,7 +2,7 @@ import { combineReducers } from 'redux';
 import * as types from './types';
 
 const INIT = {
-  user: null
+  currentUser: null
 }
 
 function userStates(state=INIT, action) {
@@ -10,7 +10,7 @@ function userStates(state=INIT, action) {
         case types.SET_USER_TYPE:
             return {
                 ...state,
-                user: action.user
+                currentUser: action.user
             }
         default:
             return state

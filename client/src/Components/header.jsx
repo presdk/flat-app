@@ -5,19 +5,18 @@ import { AppBar, Toolbar, Typography } from '@material-ui/core';
 import * as selectors from '../redux/selectors';
 
 class Header extends React.Component {
-    constructor(props) {
-        super(props);
-        this.state = {
-
-        }
+    constructor() {
+        super();
     }
 
     render() {
+        const { currentUser } = this.props;
+
         return (
             <AppBar position="static" style={{ marginBottom: '8px' }}>
                 <Toolbar>
                     <Typography variant="h6">
-                        Bills Splitter {this.props.user ? `> ${this.props.user.name}` : null}
+                        Bills Splitter {currentUser ? `> ${currentUser.name}` : null}
                     </Typography>
                 </Toolbar>
             </AppBar>
@@ -27,7 +26,7 @@ class Header extends React.Component {
 
 const mapStateToProps = state => {
     return {
-        user: selectors.getUser(state)
+        currentUser: selectors.getUser(state)
     }
 }
 

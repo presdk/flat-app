@@ -5,71 +5,77 @@ import axios from 'axios';
 import { FormControl, Button, InputLabel, Select, MenuItem } from '@material-ui/core';
 
 import * as actions from '../../redux/actions';
+import { getUser } from "../../redux/selectors"
 
 class PageLogin extends React.Component {
-    constructor(props) {
-        super(props);
-        this.state={
-            loggedIn: false,
-            user_options: [],
-            selected_user: undefined
+    constructor() {
+        super();
+        this.state = {
+            isLoadingUsers: true,
+            isLoginRequired: true,
+            users: [],
+            selectedUserId: null
         }
-    }
-
-    setUser = userId => {
-        this.setState({ selected_user: userId })
-    }
-
-    login = () => {
-        let user_states = null;
-        this.state.user_options.forEach(user => {
-            if (user._id === this.state.selected_user) {
-                user_states = user
-            }
-        });
-        this.props.setUser(user_states);
-        this.setState({ loggedIn: true })
     }
 
     componentDidMount() {
         axios.get('http://localhost:4000/users').then(res => {
-            this.select_items = res.data.map(user => {
-                return (
-                    <MenuItem 
-                        key={user._id}
-                        value={user._id}
-                    >
-                        {user.name}
-                    </MenuItem>
-                )
+            this.setState({
+                users: res.data,
+                isLoadingUsers: false
             });
-            this.setState({ user_options: res.data });
         });
     }
-    
+
+    performLogin = () => {
+        const user = this.findUserById(this.state.selectedUserId);
+        this.props.setUser(user);
+    }
+
+    findUserById(userId) {
+        return this.state.users.find(user => user._id === userId);
+    }
+
     render() {
+        const { currentUser } = this.props;
+        if (currentUser != null) {
+            return <Redirect to="/" />;
+        }
+
+        const { isLoadingUsers, users, selectedUserId } = this.state;
+        if (isLoadingUsers) {
+            return <p>Loading users...</p>
+        }
         return (
-            <div>
-                {this.state.loggedIn ? <Redirect to="/"/> : null}
-                <FormControl>
-                    <InputLabel>User</InputLabel>
-                    <Select
-                        value={this.state.selected_user}
-                        onChange={(event) => this.setUser(event.target.value)}
-                        autoWidth={true}
-                    >
-                        {this.select_items ? this.select_items : null}
-                    </Select>
-                </FormControl>
-                <Button onClick={() => this.login()}>Login</Button>
-            </div>
+            users.length <= 0 ?
+                <p>There are currently no users. Please add users to perform any action.</p>
+                : <div>
+                    <FormControl>
+                        <InputLabel>User</InputLabel>
+                        <Select
+                            value={selectedUserId}
+                            onChange={(event) => {
+                                const userId = event.target.value;
+                                this.setState({ selectedUserId: userId })
+                            }}
+                            autoWidth={true}
+                        >
+                            {users.map(user =>
+                                <MenuItem key={user._id} value={user._id}>
+                                    {user.name}
+                                </MenuItem>
+                            )}
+                        </Select>
+                    </FormControl>
+                    <Button onClick={() => this.performLogin()}>Login</Button>
+                </div>
         )
     }
 }
 
 const mapStateToProps = state => {
     return {
-        
+        currentUser: getUser(state)
     }
 }
 

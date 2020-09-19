@@ -10,25 +10,24 @@ import PageCreateBill from './PageContainers/CreateBill';
 import PageViewBill from './PageContainers/ViewBill';
 
 class PageRoutes extends React.Component {
-    constructor(props) {
-        super(props);
+    constructor() {
+        super();
         this.state = {
-
         }
     }
-    
+
     render() {
         return (
-            <div style={{ 
-                minWidth: '350px', 
-                width: '50%', 
+            <div style={{
+                minWidth: '350px',
+                width: '50%',
                 margin: 'auto'
             }}>
-                {(this.props.user==null) ? <Redirect to='/login' /> : null}
-                <Route exact path='/' component={PageDashboard}/>
-                <Route exact path='/login' component={PageLogin}/>
-                <Route exact path='/create-bill' component={PageCreateBill}/>
-                <Route exact path='/bill' component={PageViewBill}/>
+                {this.props.currentUser == null ? <Redirect to='/login' /> : null}
+                <Route exact path='/' component={PageDashboard} />
+                <Route exact path='/login' component={PageLogin} />
+                <Route exact path='/create-bill' component={PageCreateBill} />
+                <Route exact path='/bill' component={PageViewBill} />
             </div>
         )
     }
@@ -36,7 +35,7 @@ class PageRoutes extends React.Component {
 
 const mapStateToProps = state => {
     return {
-        user: selectors.getUser(state)
+        currentUser: selectors.getUser(state)
     }
 }
 
