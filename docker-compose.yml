@@ -1,0 +1,21 @@
+version: '3'
+services:
+    mongo:
+        image: "bitnami/mongodb"
+        ports:
+            - "27017:27017"
+    server:
+        build: ./server
+        depends_on:
+            - mongo
+        ports:
+            - "4000:4000"
+        environment:
+            - MONGODB_URI=mongodb://mongo:27017
+            - MONGODB_DB=flat-app
+    client:
+        build: ./client
+        depends_on:
+            - server
+        ports:
+            - "5000:5000"
