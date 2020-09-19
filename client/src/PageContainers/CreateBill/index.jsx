@@ -6,10 +6,11 @@ import { Button, Checkbox, Select, MenuItem } from '@material-ui/core';
 import * as selectors from '../../redux/selectors';
 
 import AppTable from '../../Components/table';
+import userPageHoc from "../../hocs/userPage";
 
 class PageCreateBill extends React.Component {
-    constructor(props) {
-        super(props);
+    constructor() {
+        super();
         this.state={
             bill_details: null,
             disp_data: null
@@ -163,7 +164,7 @@ class PageCreateBill extends React.Component {
 
 const mapStateToProps = state => {
     return {
-        user: selectors.getUser(state)
+        currentUser: selectors.getUser(state)
     }
 }
 
@@ -173,4 +174,4 @@ const mapDispatchToProps = dispatch => {
     }
 }
 
-export default connect(mapStateToProps, mapDispatchToProps)(PageCreateBill)
+export default connect(mapStateToProps, mapDispatchToProps)(userPageHoc(PageCreateBill))

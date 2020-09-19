@@ -15,6 +15,7 @@ import * as selectors from '../../redux/selectors';
 
 import AppTable from '../../Components/table';
 import StatusSelector from '../../Components/statusSelector';
+import userPageHoc from "../../hocs/userPage";
 
 function sortByDate(a, b) {
     const dateA = a['date'].split('-');
@@ -141,11 +142,12 @@ class PageDashboard extends React.Component {
     };
 
     componentDidMount() {
-        axios.get('http://localhost:4000/bills').then(b_res => {
-            axios.get('http://localhost:4000/users').then(u_res => {
+        axios.get('http://localhost:4000/bills').then(bills => {
+            axios.get('http://localhost:4000/users').then(users => {
+                const userType = this.props.currentUser.type;
                 var i = 0;
-                if (this.props.currentUser && (this.props.currentUser.type === 'user')) {
-                    b_res.data.forEach(item => {
+                if (userType === 'user') {
+                    bills.data.forEach(item => {
                         item.index = i;
                         i++;
                         item.payments.forEach(userItem => {
@@ -154,10 +156,10 @@ class PageDashboard extends React.Component {
                             }
                         });
                     });
-                } else {
-                    b_res.data.forEach(item => {
+                } else if (userType === "admin") {
+                    bills.data.forEach(item => {
                         item.payments.forEach(userItem => {
-                            const found_user = u_res.data.filter(user => {
+                            const found_user = users.data.filter(user => {
                                 return user._id === userItem.userId
                             });
                             if (Array.isArray(found_user) && found_user.length) {
@@ -166,7 +168,7 @@ class PageDashboard extends React.Component {
                         })
                     });
                 }
-                this.setState({ loading: false, data: groupBy(b_res.data, 'is_admin_confirmed') });
+                this.setState({ loading: false, data: groupBy(bills.data, 'is_admin_confirmed') });
             })
         });
     }
@@ -207,7 +209,7 @@ class PageDashboard extends React.Component {
 
 const mapStateToProps = state => {
     return {
-        user: selectors.getUser(state)
+        currentUser: selectors.getUser(state)
     }
 }
 
@@ -217,4 +219,4 @@ const mapDispatchToProps = dispatch => {
     }
 }
 
-export default connect(mapStateToProps, mapDispatchToProps)(PageDashboard)
+export default connect(mapStateToProps, mapDispatchToProps)(userPageHoc(PageDashboard))

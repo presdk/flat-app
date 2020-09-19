@@ -1,6 +1,6 @@
 import React from 'react';
 import { connect } from 'react-redux'
-import { Redirect } from 'react-router-dom';
+import { Redirect, useHistory } from 'react-router-dom';
 import axios from 'axios';
 import { FormControl, Button, InputLabel, Select, MenuItem } from '@material-ui/core';
 
@@ -30,6 +30,7 @@ class PageLogin extends React.Component {
     performLogin = () => {
         const user = this.findUserById(this.state.selectedUserId);
         this.props.setUser(user);
+        this.props.history.push("/")
     }
 
     findUserById(userId) {
@@ -38,14 +39,11 @@ class PageLogin extends React.Component {
 
     render() {
         const { currentUser } = this.props;
-        if (currentUser != null) {
-            return <Redirect to="/" />;
-        }
-
         const { isLoadingUsers, users, selectedUserId } = this.state;
         if (isLoadingUsers) {
             return <p>Loading users...</p>
         }
+
         return (
             users.length <= 0 ?
                 <p>There are currently no users. Please add users to perform any action.</p>

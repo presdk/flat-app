@@ -23,7 +23,6 @@ class PageRoutes extends React.Component {
                 width: '50%',
                 margin: 'auto'
             }}>
-                {this.props.currentUser == null ? <Redirect to='/login' /> : null}
                 <Route exact path='/' component={PageDashboard} />
                 <Route exact path='/login' component={PageLogin} />
                 <Route exact path='/create-bill' component={PageCreateBill} />

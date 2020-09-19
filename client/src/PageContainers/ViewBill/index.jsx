@@ -15,6 +15,7 @@ import AppTable from '../../Components/table';
 import StatusSelector from '../../Components/statusSelector';
 
 import * as selectors from '../../redux/selectors';
+import userPageHoc from "../../hocs/userPage";
 
 const columns = [
     { key: 'name', name: 'User', align: 'left' },
@@ -68,7 +69,7 @@ class PageViewBill extends React.Component {
     render() {
         if (this.state.bill_details) {
             const bill = {...this.state.bill_details};
-            const user = {...this.props.user}
+            const user = {...this.props.currentUser}
             let extract = null;
             bill.payments.forEach(item => {
                 if (item.userId === user._id) {
@@ -153,7 +154,7 @@ class PageViewBill extends React.Component {
 
 const mapStateToProps = state => {
     return {
-        user: selectors.getUser(state)
+        currentUser: selectors.getUser(state)
     }
 }
 
@@ -163,4 +164,4 @@ const mapDispatchToProps = dispatch => {
     }
 }
 
-export default connect(mapStateToProps, mapDispatchToProps)(PageViewBill)
+export default connect(mapStateToProps, mapDispatchToProps)(userPageHoc(PageViewBill))
