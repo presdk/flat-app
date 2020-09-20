@@ -107,10 +107,10 @@ class PageViewBill extends React.Component {
                     <p>
                         <a href='http://localhost:4000' target='_blank' rel="noopener noreferrer">See original</a>
                     </p> 
-                    {this.props.user.type === 'user' ? 
+                    {this.props.currentUser.type === 'user' ? 
                         (extract ? 
                             <StatusSelector 
-                                user_type={this.props.user.type}
+                                user_type={this.props.currentUser.type}
                                 handleStatusChange={(new_val, user_id) => this.handleStatusUpdate(new_val, user_id)}
                                 payment={extract}
                             />
@@ -123,7 +123,7 @@ class PageViewBill extends React.Component {
                                 return (
                                     <StatusSelector 
                                         key={payment.userId}
-                                        user_type={this.props.user.type}
+                                        user_type={this.props.currentUser.type}
                                         handleStatusChange={(new_val, user_id) => this.handleStatusUpdate(new_val, user_id)}
                                         payment={payment}
                                         override={this.state.edit}
