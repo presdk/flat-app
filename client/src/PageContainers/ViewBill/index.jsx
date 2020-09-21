@@ -94,7 +94,7 @@ class PageViewBill extends React.Component {
                         </ExpansionPanelSummary>
                         <ExpansionPanelDetails>
                             <div>
-                                <div>Splits from ${bill.total_amount}</div>
+                                <div>Splits from total amount of: ${bill.total_amount} and fixed amount of: ${bill.fixed_amount}</div>
                                 <div>
                                     <AppTable 
                                         columns={columns}
