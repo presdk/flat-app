@@ -14,17 +14,27 @@ class PageLogin extends React.Component {
             isLoadingUsers: true,
             isLoginRequired: true,
             users: [],
-            selectedUserId: null
+            selectedUserId: -1
         }
     }
 
     componentDidMount() {
+        if (this.props.currentUser != null) {
+            this.setState({ selectedUserId: this.props.currentUser._id});
+        }
+
         axios.get('http://localhost:4000/users').then(res => {
             this.setState({
                 users: res.data,
                 isLoadingUsers: false
             });
         });
+    }
+
+    onSelectedUserChanged = (event) => {
+        const userId = event.target.value;
+
+        this.setState({ selectedUserId: userId })
     }
 
     performLogin = () => {
@@ -38,8 +48,8 @@ class PageLogin extends React.Component {
     }
 
     render() {
-        const { currentUser } = this.props;
         const { isLoadingUsers, users, selectedUserId } = this.state;
+        
         if (isLoadingUsers) {
             return <p>Loading users...</p>
         }
@@ -48,24 +58,21 @@ class PageLogin extends React.Component {
             users.length <= 0 ?
                 <p>There are currently no users. Please add users to perform any action.</p>
                 : <div>
-                    <FormControl>
-                        <InputLabel>User</InputLabel>
                         <Select
                             value={selectedUserId}
-                            onChange={(event) => {
-                                const userId = event.target.value;
-                                this.setState({ selectedUserId: userId })
-                            }}
+                            onChange={(event) => this.onSelectedUserChanged(event)}
                             autoWidth={true}
                         >
+                            <MenuItem value="-1" disabled>
+                                Select a user
+                            </MenuItem>
                             {users.map(user =>
                                 <MenuItem key={user._id} value={user._id}>
                                     {user.name}
                                 </MenuItem>
                             )}
                         </Select>
-                    </FormControl>
-                    <Button onClick={() => this.performLogin()}>Login</Button>
+                        <Button onClick={() => this.performLogin()}>Login</Button>
                 </div>
         )
     }
