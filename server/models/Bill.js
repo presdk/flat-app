@@ -16,6 +16,7 @@ const BillType = Object.freeze({
  * @property {string} date.required - The date of the issued bill in the format `dd-mm-yy`
  * @property {string} type.required - The type of the bill: `water` or `power` or `internet` or `misc`
  * @property {Number} total_amount.required - The total dollar amount of the bill
+ * @property {Number} fixed_amount - The fixed dollar amount of the bill that is always split between each member regardless of stay duration.
  * @property {string} reference_name - The  reference name to use for the payment of this bill in the format `'<first letter of type><month><year>'`
  * @property {Boolean} is_admin_confirmed - True if the correctness of the bill has been confirmed by the admin
  * @property {Boolean} is_deleted - True if the bill has been deleted
@@ -28,7 +29,7 @@ const BillSchema = new Schema({
     required: true,
     validate: {
       validator: (date) => {
-        return /\d\d-\d\d-\d\d/.test(date);
+        return /\d\d-\d\d-\d\d\d\d/.test(date);
       },
     },
   },
@@ -37,6 +38,12 @@ const BillSchema = new Schema({
     type: Number,
     required: true,
     min: [0, "Amount must be a positive number"],
+  },
+  fixed_amount: {
+    type: Number,
+    required: false,
+    min: [0, "Amount must be a positive number"],
+    default: 0
   },
   reference_name: String,
   is_admin_confirmed: { type: Boolean, default: false },
@@ -52,14 +59,15 @@ BillSchema.methods.calculatePayments = function () {
   }
 
   const totalUsageInDays = this.payments
-    .map((p) => p.usage_in_days)
-    .reduce((a, b) => a + b);
+  .map((p) => p.usage_in_days)
+  .reduce((a, b) => a + b);
 
   this.payments.forEach((p) => {
     const { usage_in_days } = p;
 
-    const amountToPay = this.total_amount * (usage_in_days / totalUsageInDays);
-    p.payable_amount = amountToPay;
+    const amountToPay = usage_in_days > 0 ? this.total_amount * (usage_in_days / totalUsageInDays) : 0;
+    const fixedToPay = this.fixed_amount / this.payments.length;
+    p.payable_amount = amountToPay + fixedToPay;
   });
 };
 

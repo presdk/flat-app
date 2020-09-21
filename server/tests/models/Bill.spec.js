@@ -3,7 +3,6 @@ const { Bill, BillType } = require("../../models/Bill");
 const { BillPayment } = require("../../models/BillPayment");
 const { User } = require("../../models/User");
 const sinon = require("sinon");
-const mongoose = require("mongoose");
 
 describe("Bill model", () => {
   const userStub = sinon.stub(User, "findById");
@@ -27,8 +26,9 @@ describe("Bill model", () => {
   it("create bill sets default flags", () => {
     const bill = Bill();
 
-    assert.equal(false, bill.is_admin_confirmed);
-    assert.equal(false, bill.is_deleted);
+    assert.strictEqual(false, bill.is_admin_confirmed);
+    assert.strictEqual(false, bill.is_deleted);
+    assert.strictEqual(0, bill.fixed_amount);
   });
 
   it("create bill has default empty files and payments", () => {
@@ -46,9 +46,21 @@ describe("Bill model", () => {
 
     bill.validate((err) => {
       assert(err.errors.total_amount);
-      assert.equal(
+      assert.strictEqual(
         "Amount must be a positive number",
         err.errors.total_amount.message
+      );
+    });
+  });
+
+  it("create bill has errors when negative fixed amount", () => {
+    const bill = Bill({ fixed_amount: -1 });
+
+    bill.validate((err) => {
+      assert(err.errors.fixed_amount);
+      assert.strictEqual(
+        "Amount must be a positive number",
+        err.errors.fixed_amount.message
       );
     });
   });
@@ -59,14 +71,14 @@ describe("Bill model", () => {
       { date: "1 January 2020", isValid: false },
       { date: "1-1-20", isValid: false },
       { date: "--------", isValid: false },
-      { date: "01-01-20", isValid: true },
+      { date: "01-01-2020", isValid: true },
     ];
 
     testCases.forEach((tc) => {
       const { date, isValid } = tc;
       const bill = Bill({ date: date });
       bill.validate((err) => {
-        assert.equal(isValid, err.errors.date == null);
+        assert.strictEqual(isValid, err.errors.date == null);
       });
     });
   });
@@ -78,25 +90,51 @@ describe("Bill model", () => {
     bill.payments.push(paymentInfo1);
     bill.payments.push(paymentInfo2);
 
-    bill.calculatePayments([paymentInfo1, paymentInfo2]);
+    bill.calculatePayments();
 
-    assert(2, bill.payments.length);
+    assert.strictEqual(2, bill.payments.length);
 
-    assert(50, bill.payments[0].payable_amount);
-    assert(1, bill.payments[0].userId);
-    assert(1, bill.payments[0].usage_in_days);
+    assert.strictEqual(50, bill.payments[0].payable_amount);
+    assert.strictEqual('1', bill.payments[0].userId);
+    assert.strictEqual(1, bill.payments[0].usage_in_days);
 
-    assert(50, bill.payments[1].payable_amount);
-    assert(1, bill.payments[1].userId);
-    assert(1, bill.payments[1].usage_in_days);
+    assert.strictEqual(50, bill.payments[1].payable_amount);
+    assert.strictEqual('2', bill.payments[1].userId);
+    assert.strictEqual(1, bill.payments[1].usage_in_days);
+  });
+
+  it("bill create payments with a user without any usage ", () => {
+    const bill = Bill({ total_amount: 100, fixed_amount: 30 });
+    const paymentInfo1 = { userId: 1, usage_in_days: 1, payable_amount: 0 };
+    const paymentInfo2 = { userId: 2, usage_in_days: 1, payable_amount: 0 };
+    const paymentInfo3 = { userId: 3, usage_in_days: 0, payable_amount: 0 };
+    bill.payments.push(paymentInfo1);
+    bill.payments.push(paymentInfo2);
+    bill.payments.push(paymentInfo3);
+
+    bill.calculatePayments();
+
+    assert.strictEqual(3, bill.payments.length);
+
+    assert.strictEqual(60, bill.payments[0].payable_amount);
+    assert.strictEqual('1', bill.payments[0].userId);
+    assert.strictEqual(1, bill.payments[0].usage_in_days);
+
+    assert.strictEqual(60, bill.payments[1].payable_amount);
+    assert.strictEqual('2', bill.payments[1].userId);
+    assert.strictEqual(1, bill.payments[1].usage_in_days);
+
+    assert.strictEqual(10, bill.payments[2].payable_amount);
+    assert.strictEqual('3', bill.payments[2].userId);
+    assert.strictEqual(0, bill.payments[2].usage_in_days);
   });
 
   it("create bill generates reference", () => {
-    const bill = Bill({ type: BillType.Water, date: "05-01-20" });
+    const bill = Bill({ type: BillType.Water, date: "05-01-2020" });
 
     bill.generateReference();
 
-    assert.equal("w0120", bill.reference_name);
+    assert.strictEqual("w0120", bill.reference_name);
   });
 
   it("update payments does not add payments when user does not exist", () => {
@@ -119,7 +157,7 @@ describe("Bill model", () => {
     try {
       bill.updatePayments(updatedPayments);
     } catch (err) {
-      assert.equal(expectedError, err.message);
+      assert.strictEqual(expectedError, err.message);
     }
   });
 
@@ -145,11 +183,11 @@ describe("Bill model", () => {
       bill.updatePayments(updatedPayments);
     } catch (err) {}
 
-    assert.equal(1, bill.payments.length);
+    assert.strictEqual(1, bill.payments.length);
 
     const payment = bill.payments[0];
-    assert.equal(User1Id, payment.userId);
-    assert.equal(10, payment.usage_in_days);
+    assert.strictEqual(User1Id, payment.userId);
+    assert.strictEqual(10, payment.usage_in_days);
   });
 
   it("update payments when payments are existing", () => {
@@ -190,15 +228,15 @@ describe("Bill model", () => {
       bill.updatePayments(updatedPayments);
     } catch (err) {}
 
-    assert.equal(2, bill.payments.length);
+    assert.strictEqual(2, bill.payments.length);
 
     const payment1 = bill.payments.find(payment => payment.userId == User1Id);
     assert(payment1 != null);
-    assert.equal(11, payment1.usage_in_days);
+    assert.strictEqual(11, payment1.usage_in_days);
 
     const payment2 = bill.payments.find(payment => payment.userId == User2Id);
     assert(payment2 != null);
-    assert.equal(12, payment2.usage_in_days);
+    assert.strictEqual(12, payment2.usage_in_days);
   });
 
   it("update payments removes payments that are missing from the updated payments", () => {
@@ -220,6 +258,6 @@ describe("Bill model", () => {
       bill.updatePayments(updatedPayments);
     } catch (err) {}
 
-    assert.equal(0, bill.payments.length);
+    assert.strictEqual(0, bill.payments.length);
   });
 });

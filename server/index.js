@@ -58,6 +58,12 @@ async function main() {
   const bills = require("./routes/bills");
   app.use("/bills", bills);
 
+  // Set up middleware to handle errors
+  app.use(function(err, req, res, next) {
+    console.log(err.stack);
+    res.status(500).send(err.message);
+  });
+
   app.listen(PORT, (err) => {
     if (err) {
       throw err;

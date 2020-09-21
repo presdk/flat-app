@@ -8,10 +8,10 @@ const { User } = require("../models/User");
  * @returns {Array.<User>} 200 - An array of user info
  * @returns {object} 500 - Error
  */
-router.get("/", async (req, res) => {
+router.get("/", async (req, res, next) => {
   await User.find({}, (err, users) => {
     if (err) {
-      res.sendStatus(500);
+      next(err);
     } else {
       res.send(JSON.stringify(users));
     }
@@ -23,13 +23,12 @@ router.get("/", async (req, res) => {
  * @group Users
  * @returns {User.model} 200 - A user
  */
-router.get("/:userId/", async (req, res) => {
+router.get("/:userId/", async (req, res, next) => {
   try {
     const user = await User.findById(req.params.userId).exec();
     res.send(user);
   } catch (err) {
-    console.log(err);
-    res.status(500).send(err);
+    next(err);
   }
 });
 
@@ -42,7 +41,7 @@ router.get("/:userId/", async (req, res) => {
  * @returns {User.model} 200 - The user
  * @returns {object} 500 - Error
  */
-router.post("/add", async (req, res) => {
+router.post("/add", async (req, res, next) => {
   const newEntry = req.body;
   const { name, email_address } = newEntry;
 
@@ -52,17 +51,13 @@ router.post("/add", async (req, res) => {
     }).exec();
 
     if (existingUsers && existingUsers.length > 0) {
-      res
-        .status(500)
-        .send("User already exists with same name or email address");
-      return;
+      throw new Error("User already exists with same name or email address");
     }
 
     const newUser = await User.create(newEntry);
     res.send(newUser);
   } catch (err) {
-    console.log(err);
-    res.status(500).send(err);
+    next(err);
   }
 });
 
@@ -74,7 +69,7 @@ router.post("/add", async (req, res) => {
  * @returns {object} 200 - Success
  * @returns {object} 500 - Error
  */
-router.post("/:userId/update", async (req, res) => {
+router.post("/:userId/update", async (req, res, next) => {
   const changedEntry = req.body;
 
   try {
@@ -86,8 +81,7 @@ router.post("/:userId/update", async (req, res) => {
 
     res.send(user);
   } catch (err) {
-    console.log(err);
-    res.status(500).send(err);
+    next(err);
   }
 });
 
@@ -103,8 +97,7 @@ router.post("/:userId/delete", async (req, res) => {
     await User.deleteOne({ _id: req.params.userId }).exec();
     res.sendStatus(200);
   } catch (err) {
-    console.log(err);
-    res.status(500).send(err);
+    next(err);
   }
 });
 

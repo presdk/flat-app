@@ -10,13 +10,12 @@ const { BillPayment } = require("../models/BillPayment");
  * @returns {Array.<Bill>} 200 - An array of bills
  * @returns {object} 500 - Error
  */
-router.get("/", async (req, res) => {
+router.get("/", async (req, res, next) => {
   try {
     const bills = await Bill.find().exec();
     res.send(bills);
   } catch (err) {
-    console.log(err);
-    res.status(500).send(err);
+    next(err);
   }
 });
 
@@ -26,13 +25,12 @@ router.get("/", async (req, res) => {
  * @returns {Bill.model} 200 - A bill
  * @returns {object} 500 - Error
  */
-router.get("/:billId/", async (req, res) => {
+router.get("/:billId/", async (req, res, next) => {
   try {
     const bill = await Bill.findById(req.params.billId).exec();
     res.send(bill);
   } catch (err) {
-    console.log(err);
-    res.status(500).send(err);
+    next(err);
   }
 });
 
@@ -42,6 +40,7 @@ router.get("/:billId/", async (req, res) => {
  * @param {string} date.required - The date of the issued bill in the format `dd-mm-yy`
  * @param {string} type.required - The type of the bill: `water` or `power` or `internet` or `misc`
  * @param {Number} total_amount.required - The total dollar amount of the bill
+ * @param {Number} fixed_amount - The fixed dollar amount of the bill that is always split between each member regardless of stay duration.
  * @param {string} reference_name - The  reference name to use for the payment of this bill
  * @returns {Bill.model} 200 - A bill
  * @returns {object} 500 - Error
@@ -123,7 +122,7 @@ router.post("/:billId/:userId/update", async (req, res, next) => {
       throw new Error(`User id: ${userId} was not found from bill`);
     }
 
-    if (usage_in_days) {
+    if (usage_in_days != null) {
       payment.usage_in_days = usage_in_days;
     }
 
@@ -131,7 +130,7 @@ router.post("/:billId/:userId/update", async (req, res, next) => {
       payment.status = status;
     }
 
-    await bill.save().then(bil => res.send(bill));
+    await bill.save().then(bill => res.send(bill));
   } catch (err) {
     next(err);
   }
