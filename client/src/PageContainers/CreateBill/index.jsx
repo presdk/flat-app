@@ -33,6 +33,15 @@ class PageCreateBill extends React.Component {
         } },
         { key: 'payable_amount', name: 'Amount', align: 'left', render: (cell, row) => { return `$${cell.toFixed(2)}` } }
     ]
+    onPublishClicked = () => {
+        axios.post(`http://localhost:4000/bills/${this.props.location.state.bill_id}/update`, { is_admin_confirmed: true })
+        .then(data => {
+            this.props.history.goBack();
+        })
+        .catch(err => {
+            alert(`An error occurred with the following reason: ${err.message}`);
+        });
+    }
 
     handleUserSelect = index => {
         let cpDisp = [...this.state.disp_data];
@@ -146,7 +155,7 @@ class PageCreateBill extends React.Component {
                     />
                     <Button
                         color='primary'
-                        onClick={() => axios.post(`http://localhost:4000/bills/${this.props.location.state.bill_id}/update`, { is_admin_confirmed: true })}
+                        onClick={() => this.onPublishClicked()}
                     >
                         Publish Bill
                     </Button>
