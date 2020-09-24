@@ -1,11 +1,13 @@
 import React from 'react';
 import { connect } from 'react-redux'
-import { Redirect, useHistory } from 'react-router-dom';
 import axios from 'axios';
-import { FormControl, Button, InputLabel, Select, MenuItem } from '@material-ui/core';
+import { Grid } from '@material-ui/core';
 
 import * as actions from '../../redux/actions';
 import { getUser } from "../../redux/selectors"
+import UserBox from './UserBox';
+import Hoverable from "../../Components/Hoverable";
+import { generateHash } from "../../utils/hash";
 
 class PageLogin extends React.Component {
     constructor() {
@@ -20,7 +22,7 @@ class PageLogin extends React.Component {
 
     componentDidMount() {
         if (this.props.currentUser != null) {
-            this.setState({ selectedUserId: this.props.currentUser._id});
+            this.setState({ selectedUserId: this.props.currentUser._id });
         }
 
         axios.get(`${process.env.REACT_APP_SERVER_API_ENDPOINT}/users`).then(res => {
@@ -31,14 +33,8 @@ class PageLogin extends React.Component {
         });
     }
 
-    onSelectedUserChanged = (event) => {
-        const userId = event.target.value;
-
-        this.setState({ selectedUserId: userId })
-    }
-
-    performLogin = () => {
-        const user = this.findUserById(this.state.selectedUserId);
+    handleUserClicked = (userId) => {
+        const user = this.findUserById(userId);
         this.props.setUser(user);
         this.props.history.push("/")
     }
@@ -49,7 +45,7 @@ class PageLogin extends React.Component {
 
     render() {
         const { isLoadingUsers, users, selectedUserId } = this.state;
-        
+
         if (isLoadingUsers) {
             return <p>Loading users...</p>
         }
@@ -57,23 +53,19 @@ class PageLogin extends React.Component {
         return (
             users.length <= 0 ?
                 <p>There are currently no users. Please add users to perform any action.</p>
-                : <div>
-                        <Select
-                            value={selectedUserId}
-                            onChange={(event) => this.onSelectedUserChanged(event)}
-                            autoWidth={true}
-                        >
-                            <MenuItem value="-1" disabled>
-                                Select a user
-                            </MenuItem>
-                            {users.map(user =>
-                                <MenuItem key={user._id} value={user._id}>
-                                    {user.name}
-                                </MenuItem>
-                            )}
-                        </Select>
-                        <Button onClick={() => this.performLogin()}>Login</Button>
-                </div>
+                : <Grid container direction="row" justify="center">
+                    {users.map(user => {
+                        const isSelected = user._id === selectedUserId;
+                        return (
+                            <Hoverable isSelected={isSelected}>
+                                <UserBox key={user._id}
+                                    user={user}
+                                    width="20vw" height="20vw"
+                                    handleClick={() => this.handleUserClicked(user._id)} />
+                            </Hoverable>
+                        )
+                    })}
+                </Grid>
         )
     }
 }
