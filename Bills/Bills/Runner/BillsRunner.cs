@@ -1,16 +1,10 @@
 ﻿using Bills.Mail;
 using Bills.Mail.Models;
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.IO;
-using System.Net;
 using Bills.BillsServerApi;
 using Bills.DocumentParser.Models;
-using Castle.DynamicProxy.Generators.Emitters.SimpleAST;
-using iText.Kernel.Pdf;
-using iText.Kernel.Pdf.Canvas.Parser.Util;
 using PDFIndexer.Utils;
 
 namespace Bills.Runner
@@ -20,9 +14,9 @@ namespace Bills.Runner
     /// </summary>
     public class BillsRunner
     {
-        private readonly IFileManager fileManager;
-        private readonly IMailService mailService;
-        private readonly IBillsServerApi billsApi;
+        private readonly IFileManager _fileManager;
+        private readonly IMailService _mailService;
+        private readonly IBillsServerApi _billsApi;
 
         /// <summary>
         /// The constructor for the bills runner
@@ -36,9 +30,9 @@ namespace Bills.Runner
             Debug.Assert(fileManager != null);
             Debug.Assert(billsApi != null);
 
-            this.fileManager = fileManager;
-            this.mailService = mailService;
-            this.billsApi = billsApi;
+            this._fileManager = fileManager;
+            this._mailService = mailService;
+            this._billsApi = billsApi;
         }
 
         /// <summary>
@@ -54,7 +48,7 @@ namespace Bills.Runner
 
             if (clearAllLocalBills)
             {
-                this.fileManager.ClearAllFiles();
+                this._fileManager.ClearAllFiles();
             }
 
             const string powerBillsQuery = "label:power";
@@ -82,7 +76,7 @@ namespace Bills.Runner
 
             Trace.WriteLine($"Download started for filter query: {filterQuery}...");
 
-            IEnumerable<MultiFileMessage> messages = this.mailService.GetPdfMessagesByFilter(filterQuery);
+            IEnumerable<MultiFileMessage> messages = _mailService.GetPdfMessagesByFilter(filterQuery);
             return messages;
         }
 
@@ -94,12 +88,8 @@ namespace Bills.Runner
                 foreach (FileModel file in message.Files)
                 {
                     Debug.Assert(file != null);
-                    if (file == null)
-                    {
-                        continue;
-                    }
 
-                    string localFilePath = this.fileManager.CopyToLocalStorage(file, saveFolderName);
+                    string localFilePath = _fileManager.CopyToLocalStorage(file, saveFolderName);
                     string fullText = textExtractor.ExtractFullText(localFilePath);
 
                     yield return BillBase.CreateBill(type, fullText);
@@ -109,13 +99,13 @@ namespace Bills.Runner
 
         private void UploadBills(IEnumerable<BillBase> bills, BillType billType)
         {
-            Trace.WriteLine(string.Format("Uploading bills for type: {0}", billType.ToString()));
+            Trace.WriteLine($"Uploading bills for type: {billType}");
 
             foreach (BillBase bill in bills)
             {
-                Trace.WriteLine(string.Format("\tUploading bill: {0}", bill));
+                Trace.WriteLine($"\tUploading bill: {bill}");
 
-                string date = string.Format("{0:D2}-{1:D2}-{2:D4}", bill.Day, bill.Month, bill.Year);
+                string date = $"{bill.Day:D2}-{bill.Month:D2}-{bill.Year:D4}";
                 string type;
                 switch (bill.BillType)
                 {
@@ -133,18 +123,18 @@ namespace Bills.Runner
                         return;
                 }
 
-                CreateBillResponse billResponse = this.billsApi.CreateBill(date, type, bill.Amount);
+                CreateBillResponse billResponse = this._billsApi.CreateBill(date, type, bill.Amount);
                 if (billResponse.IsSuccess)
                 {
                     Trace.WriteLine("\t\t[SUCCESS]");
                 }
                 else
                 {
-                    Trace.WriteLine(string.Format("\t\t[FAILED] Reason: {0}", billResponse.ErrorMessage));
+                    Trace.WriteLine($"\t\t[FAILED] Reason: {billResponse.ErrorMessage}");
                 }
             }
 
-            Trace.WriteLine(string.Format("Finished uploading bills for type: {0}", billType.ToString()));
+            Trace.WriteLine($"Finished uploading bills for type: {billType}");
         }
     }
 }
