@@ -34,7 +34,7 @@ class PageCreateBill extends React.Component {
         { key: 'payable_amount', name: 'Amount', align: 'left', render: (cell, row) => { return `$${cell.toFixed(2)}` } }
     ]
     onPublishClicked = () => {
-        axios.post(`http://localhost:4000/bills/${this.props.location.state.bill_id}/update`, { is_admin_confirmed: true })
+        axios.post(`${process.env.REACT_APP_SERVER_API_ENDPOINT}/bills/${this.props.location.state.bill_id}/update`, { is_admin_confirmed: true })
         .then(data => {
             this.props.history.goBack();
         })
@@ -92,8 +92,8 @@ class PageCreateBill extends React.Component {
     }
 
     componentDidMount() {
-        axios.get(`http://localhost:4000/bills/${this.props.location.state.bill_id}`).then(b_res => {
-            axios.get('http://localhost:4000/users').then(u_res => { 
+        axios.get(`${process.env.REACT_APP_SERVER_API_ENDPOINT}/bills/${this.props.location.state.bill_id}`).then(b_res => {
+            axios.get(`${process.env.REACT_APP_SERVER_API_ENDPOINT}/users`).then(u_res => { 
                 let temp = {};
                 u_res.data.forEach(user => {
                     temp[user._id] = {
@@ -133,7 +133,7 @@ class PageCreateBill extends React.Component {
                         {bill.total_amount}
                     </p>
                     <p>
-                        <a href='http://localhost:4000' target='_blank' rel="noopener noreferrer">See original</a>
+                        <a href={`${process.env.REACT_APP_SERVER_API_ENDPOINT}`} target='_blank' rel="noopener noreferrer">See original</a>
                     </p> 
                     <div>
                         {disp.map(user => {

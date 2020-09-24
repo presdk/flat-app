@@ -23,7 +23,7 @@ class PageLogin extends React.Component {
             this.setState({ selectedUserId: this.props.currentUser._id});
         }
 
-        axios.get('http://localhost:4000/users').then(res => {
+        axios.get(`${process.env.REACT_APP_SERVER_API_ENDPOINT}/users`).then(res => {
             this.setState({
                 users: res.data,
                 isLoadingUsers: false

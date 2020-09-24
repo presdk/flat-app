@@ -123,7 +123,7 @@ class PageDashboard extends React.Component {
     
     handleStatusChange = (new_value, user_id, row) => {
         axios.post(
-            `http://localhost:4000/bills/${row._id}/${user_id}/update`, 
+            `${process.env.REACT_APP_SERVER_API_ENDPOINT}/bills/${row._id}/${user_id}/update`, 
             { status: new_value }
         )
     }
@@ -142,8 +142,8 @@ class PageDashboard extends React.Component {
     };
 
     componentDidMount() {
-        axios.get('http://localhost:4000/bills').then(bills => {
-            axios.get('http://localhost:4000/users').then(users => {
+        axios.get(`${process.env.REACT_APP_SERVER_API_ENDPOINT}/bills`).then(bills => {
+            axios.get(`${process.env.REACT_APP_SERVER_API_ENDPOINT}/users`).then(users => {
                 const userType = this.props.currentUser.type;
                 var i = 0;
                 if (userType === 'user') {

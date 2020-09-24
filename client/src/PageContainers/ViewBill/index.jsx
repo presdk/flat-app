@@ -35,14 +35,14 @@ class PageViewBill extends React.Component {
 
     handleStatusUpdate = (new_val, user_id) => {
         axios.post(
-            `http://localhost:4000/bills/${this.state.bill_details._id}/${user_id}/update`, 
+            `${process.env.REACT_APP_SERVER_API_ENDPOINT}/bills/${this.state.bill_details._id}/${user_id}/update`, 
             { status: new_val }
         )
     }
 
     componentDidMount() {
-        axios.get(`http://localhost:4000/bills/${this.props.location.state.bill_id}`).then(b_res => {
-            axios.get('http://localhost:4000/users').then(u_res => { 
+        axios.get(`${process.env.REACT_APP_SERVER_API_ENDPOINT}/bills/${this.props.location.state.bill_id}`).then(b_res => {
+            axios.get(`${process.env.REACT_APP_SERVER_API_ENDPOINT}/users`).then(u_res => { 
                 let total_days = 0;
                 let total_amount = 0;
                 let total_ratio = 0;
@@ -105,7 +105,7 @@ class PageViewBill extends React.Component {
                         </ExpansionPanelDetails>
                     </ExpansionPanel>
                     <p>
-                        <a href='http://localhost:4000' target='_blank' rel="noopener noreferrer">See original</a>
+                        <a href={`${process.env.REACT_APP_SERVER_API_ENDPOINT}`} target='_blank' rel="noopener noreferrer">See original</a>
                     </p> 
                     {this.props.currentUser.type === 'user' ? 
                         (extract ? 
