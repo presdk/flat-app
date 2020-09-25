@@ -4,6 +4,8 @@ services:
         image: "bitnami/mongodb"
         ports:
             - "27017:27017"
+        volumes:
+            - bills-data:/data/db
     server:
         build: ./server
         depends_on:
@@ -19,5 +21,6 @@ services:
             - server
         ports:
             - "5000:5000"
-        env_file:
-            - "./client-variables.env"
+volumes:
+    bills-data:
+        external: true
