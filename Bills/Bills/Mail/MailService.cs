@@ -45,9 +45,19 @@ namespace Bills.Mail
         public IEnumerable<MultiFileMessage> GetPdfMessagesByFilter(string filterQuery)
         {
             IList<Message> messageInfos = RetrieveMessagesInfoByFilter(filterQuery);
+            if (messageInfos == null)
+            {
+                yield break;
+            }
+
             foreach (Message msgInfo in messageInfos)
             {
                 Message message = RetrieveMessageById(msgInfo.Id);
+                if (message == null)
+                {
+                    continue;
+                }
+
                 MultiFileMessage multiFileMessage = new MultiFileMessage()
                 {
                     Subject = GetSubjectText(message.Payload.Headers)
@@ -73,11 +83,13 @@ namespace Bills.Mail
                     }
 
                     byte[] data = RetrieveFileById(msgInfo.Id, attachmentId);
-                    if (data != null)
+                    if (data == null)
                     {
-                        FileModel fileModel = new FileModel(part.Filename, data);
-                        multiFileMessage.Files.Add(fileModel);
+                        continue;
                     }
+
+                    FileModel fileModel = new FileModel(part.Filename, data);
+                    multiFileMessage.Files.Add(fileModel);
                 }
 
                 yield return multiFileMessage;
