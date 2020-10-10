@@ -8,13 +8,14 @@ const BillType = Object.freeze({
   Water: "water",
   Power: "power",
   Internet: "internet",
+  Gas: "gas",
   Misc: "misc",
 });
 
 /**
  * @typedef Bill
  * @property {string} date.required - The date of the issued bill in the format `dd-mm-yy`
- * @property {string} type.required - The type of the bill: `water` or `power` or `internet` or `misc`
+ * @property {string} type.required - The type of the bill: `water` or `power` or `gas` or `internet` or `misc`
  * @property {Number} total_amount.required - The total dollar amount of the bill
  * @property {Number} fixed_amount - The fixed dollar amount of the bill that is always split between each member regardless of stay duration.
  * @property {string} reference_name - The  reference name to use for the payment of this bill in the format `'<first letter of type><month><year>'`

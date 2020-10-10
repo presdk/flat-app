@@ -38,7 +38,7 @@ router.get("/:billId/", async (req, res, next) => {
  * @route POST /bills/add
  * @group Bills
  * @param {string} date.required - The date of the issued bill in the format `dd-mm-yy`
- * @param {string} type.required - The type of the bill: `water` or `power` or `internet` or `misc`
+ * @param {string} type.required - The type of the bill: `water` or `power` or `gas` or `internet` or `misc`
  * @param {Number} total_amount.required - The total dollar amount of the bill
  * @param {Number} fixed_amount - The fixed dollar amount of the bill that is always split between each member regardless of stay duration.
  * @param {string} reference_name - The  reference name to use for the payment of this bill
