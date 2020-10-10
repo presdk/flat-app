@@ -6,7 +6,7 @@
     public enum BillType
     {
         Power,
+        Gas,
         Water,
-        Internet
     }
 }

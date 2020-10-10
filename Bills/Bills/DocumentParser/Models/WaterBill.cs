@@ -4,10 +4,6 @@ namespace Bills.DocumentParser.Models
 {
     public sealed class WaterBill : BillBase
     {
-        public WaterBill()
-        {
-        }
-
         public static string FolderPath => "water";
 
         public override BillType BillType => BillType.Water;

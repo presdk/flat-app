@@ -1,8 +1,11 @@
 ﻿using Bills.Mail;
 using Bills.Mail.Models;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
+using System.Linq;
 using Bills.BillsServerApi;
 using Bills.DocumentParser.Models;
 using PDFIndexer.Utils;
@@ -52,15 +55,17 @@ namespace Bills.Runner
             }
 
             const string powerBillsQuery = "label:power";
-            IEnumerable<MultiFileMessage> powerMessages = FetchPdfMails(powerBillsQuery, processNewOnly);
+            IList<MultiFileMessage> powerMessages = FetchPdfMails(powerBillsQuery, processNewOnly).ToList();
 
             const string waterBillsQuery = "label:water";
             IEnumerable<MultiFileMessage> waterMessages = FetchPdfMails(waterBillsQuery, processNewOnly);
 
             IEnumerable<BillBase> powerBills = GenerateBills(powerMessages, BillType.Power, PowerBill.FolderPath);
+            IEnumerable<BillBase> gasBills = GenerateBills(powerMessages, BillType.Gas, GasBill.FolderPath);
             IEnumerable<BillBase> waterBills = GenerateBills(waterMessages, BillType.Water, WaterBill.FolderPath);
 
             UploadBills(powerBills, BillType.Power);
+            UploadBills(gasBills, BillType.Gas);
             UploadBills(waterBills, BillType.Water);
 
             Trace.WriteLine("Runner has ended gracefully");
@@ -90,9 +95,17 @@ namespace Bills.Runner
                     Debug.Assert(file != null);
 
                     string localFilePath = _fileManager.CopyToLocalStorage(file, saveFolderName);
-                    string fullText = textExtractor.ExtractFullText(localFilePath);
 
-                    yield return BillBase.CreateBill(type, fullText);
+                    string fullText = textExtractor.ExtractFullText(localFilePath);
+                    BillBase bill = BillBase.CreateBill(type, fullText);
+
+                    string readableFilename = Path.Combine(Path.GetDirectoryName(localFilePath), GetBillFilename(bill));
+                    if (!File.Exists(readableFilename))
+                    {
+                        File.Copy(localFilePath, readableFilename);
+                    }
+
+                    yield return bill;
                 }
             }
         }
@@ -112,11 +125,11 @@ namespace Bills.Runner
                     case BillType.Water:
                         type = "water";
                         break;
-                    case BillType.Internet:
-                        type = "internet";
-                        break;
                     case BillType.Power:
                         type = "power";
+                        break;
+                    case BillType.Gas:
+                        type = "gas";
                         break;
                     default:
                         Debug.Assert(false, "Unsupported type");
@@ -135,6 +148,11 @@ namespace Bills.Runner
             }
 
             Trace.WriteLine($"Finished uploading bills for type: {billType}");
+        }
+
+        private static string GetBillFilename(BillBase bill)
+        {
+            return string.Format("{0}-{1}-{2}-{3}.pdf", bill.BillType.ToString(), bill.Day, bill.Month, bill.Year);
         }
     }
 }

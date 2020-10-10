@@ -16,18 +16,34 @@ namespace Bills.UnitTests.DocumentParser
         }
 
         [Theory]
-        [InlineData(PowerBillText, 22, 12, 2019, BillType.Power, 153.25)]
-        [InlineData(PowerBillText2, 22, 3, 2020, BillType.Power, 105.93)]
-        [InlineData(PowerBillText3, 22, 11, 2019, BillType.Power, 182.65)]
+        [InlineData(PowerBillText, 22, 12, 2019, 92.61)]
+        [InlineData(PowerBillText2, 22, 3, 2020, 72.34)]
+        [InlineData(PowerBillText3, 22, 11, 2019, 101.20)]
         public void FromTextHasCorrectBillFieldsForPowerBill(string billText, 
-            int day, int month, int year, BillType billType, double amount)
+            int day, int month, int year, double amount)
         {
             BillBase powerBill = BillBase.CreateBill(BillType.Power, billText);
 
             Assert.Equal(day, powerBill.Day);
             Assert.Equal(month, powerBill.Month);
             Assert.Equal(year, powerBill.Year);
-            Assert.Equal(billType, powerBill.BillType);
+            Assert.Equal(BillType.Power, powerBill.BillType);
+            Assert.Equal(amount, powerBill.Amount);
+        }
+
+        [Theory]
+        [InlineData(PowerBillText, 22, 12, 2019, 60.64)]
+        [InlineData(PowerBillText2, 22, 3, 2020, 33.59)]
+        [InlineData(PowerBillText3, 22, 11, 2019, 81.45)]
+        public void FromTextHasCorrectBillFieldsForGasBill(string billText, 
+            int day, int month, int year, double amount)
+        {
+            BillBase powerBill = BillBase.CreateBill(BillType.Gas, billText);
+
+            Assert.Equal(day, powerBill.Day);
+            Assert.Equal(month, powerBill.Month);
+            Assert.Equal(year, powerBill.Year);
+            Assert.Equal(BillType.Gas, powerBill.BillType);
             Assert.Equal(amount, powerBill.Amount);
         }
 

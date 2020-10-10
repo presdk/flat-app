@@ -2,7 +2,7 @@
 using System.Diagnostics;
 using System.IO;
 using System.Text.RegularExpressions;
-using Xunit;
+using Org.BouncyCastle.Cms;
 
 namespace Bills.DocumentParser.Models
 {
@@ -63,9 +63,11 @@ namespace Bills.DocumentParser.Models
                 case BillType.Power:
                     bill = new PowerBill();
                     break;
-                case BillType.Internet:
-                    Debug.Assert(false, "Not implemented");
-                    throw new NotImplementedException();
+                case BillType.Gas:
+                    bill = new GasBill();
+                    break;
+                default:
+                    Debug.Assert(false, "Invalid type");
                     break;
             }
 
