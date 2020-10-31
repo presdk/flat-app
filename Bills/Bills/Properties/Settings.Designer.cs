@@ -25,7 +25,7 @@ namespace Bills.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("http://localhost:4000/bills/add/")]
+        [global::System.Configuration.DefaultSettingValueAttribute("http://daoon.me:4000/bills/add/")]
         public string BillsAddApi {
             get {
                 return ((string)(this["BillsAddApi"]));

@@ -3,7 +3,7 @@
   <Profiles />
   <Settings>
     <Setting Name="BillsAddApi" Type="System.String" Scope="User">
-      <Value Profile="(Default)">http://localhost:4000/bills/add/</Value>
+      <Value Profile="(Default)">http://daoon.me:4000/bills/add/</Value>
     </Setting>
   </Settings>
 </SettingsFile>

@@ -8,6 +8,7 @@ import { getUser } from "../../redux/selectors"
 import UserBox from './UserBox';
 import Hoverable from "../../Components/Hoverable";
 import { generateHash } from "../../utils/hash";
+import { API_BASE_URL } from "../../api/index";
 
 class PageLogin extends React.Component {
     constructor() {
@@ -25,7 +26,7 @@ class PageLogin extends React.Component {
             this.setState({ selectedUserId: this.props.currentUser._id });
         }
 
-        axios.get(`${process.env.REACT_APP_SERVER_API_ENDPOINT}/users`).then(res => {
+        axios.get(`${API_BASE_URL}/users`).then(res => {
             this.setState({
                 users: res.data,
                 isLoadingUsers: false

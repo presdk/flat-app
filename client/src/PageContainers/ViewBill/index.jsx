@@ -16,6 +16,7 @@ import StatusSelector from '../../Components/statusSelector';
 
 import * as selectors from '../../redux/selectors';
 import userPageHoc from "../../hocs/userPage";
+import { API_BASE_URL } from "../../api/index";
 
 const columns = [
     { key: 'name', name: 'User', align: 'left' },
@@ -35,14 +36,14 @@ class PageViewBill extends React.Component {
 
     handleStatusUpdate = (new_val, user_id) => {
         axios.post(
-            `${process.env.REACT_APP_SERVER_API_ENDPOINT}/bills/${this.state.bill_details._id}/${user_id}/update`, 
+            `${API_BASE_URL}/bills/${this.state.bill_details._id}/${user_id}/update`, 
             { status: new_val }
         )
     }
 
     componentDidMount() {
-        axios.get(`${process.env.REACT_APP_SERVER_API_ENDPOINT}/bills/${this.props.location.state.bill_id}`).then(b_res => {
-            axios.get(`${process.env.REACT_APP_SERVER_API_ENDPOINT}/users`).then(u_res => { 
+        axios.get(`${API_BASE_URL}/bills/${this.props.location.state.bill_id}`).then(b_res => {
+            axios.get(`${API_BASE_URL}/users`).then(u_res => { 
                 let total_days = 0;
                 let total_amount = 0;
                 let total_ratio = 0;
@@ -105,7 +106,7 @@ class PageViewBill extends React.Component {
                         </ExpansionPanelDetails>
                     </ExpansionPanel>
                     <p>
-                        <a href={`${process.env.REACT_APP_SERVER_API_ENDPOINT}`} target='_blank' rel="noopener noreferrer">See original</a>
+                        <a href={`${API_BASE_URL}`} target='_blank' rel="noopener noreferrer">See original</a>
                     </p> 
                     {this.props.currentUser.type === 'user' ? 
                         (extract ? 

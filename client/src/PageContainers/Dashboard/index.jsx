@@ -16,6 +16,7 @@ import * as selectors from '../../redux/selectors';
 import AppTable from '../../Components/table';
 import StatusSelector from '../../Components/statusSelector';
 import userPageHoc from "../../hocs/userPage";
+import { API_BASE_URL } from "../../api/index";
 
 function sortByDate(a, b) {
     const dateA = a['date'].split('-');
@@ -123,7 +124,7 @@ class PageDashboard extends React.Component {
     
     handleStatusChange = (new_value, user_id, row) => {
         axios.post(
-            `${process.env.REACT_APP_SERVER_API_ENDPOINT}/bills/${row._id}/${user_id}/update`, 
+            `${API_BASE_URL}/bills/${row._id}/${user_id}/update`, 
             { status: new_value }
         )
     }
@@ -142,8 +143,8 @@ class PageDashboard extends React.Component {
     };
 
     componentDidMount() {
-        axios.get(`${process.env.REACT_APP_SERVER_API_ENDPOINT}/bills`).then(bills => {
-            axios.get(`${process.env.REACT_APP_SERVER_API_ENDPOINT}/users`).then(users => {
+        axios.get(`${API_BASE_URL}/bills`).then(bills => {
+            axios.get(`${API_BASE_URL}/users`).then(users => {
                 const userType = this.props.currentUser.type;
                 var i = 0;
                 if (userType === 'user') {
