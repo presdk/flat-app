@@ -18,25 +18,27 @@ async function main() {
 
   const app = express();
 
-  // Set up swagger for api documentation
-  const expressSwagger = require("express-swagger-generator")(app);
-  let options = {
-    swaggerDefinition: {
-      info: {
-        description: "Server for flat-app",
-        title: "API for flat-app",
-        version: "1.0.0",
+  if (process.env.NODE_ENV !== "production") {
+    // Set up swagger for api documentation
+    const expressSwagger = require("express-swagger-generator")(app);
+    let options = {
+      swaggerDefinition: {
+        info: {
+          description: "Server for flat-app",
+          title: "API for flat-app",
+          version: "1.0.0",
+        },
+        host: "localhost:4000",
+        basePath: "/",
+        produces: ["application/json"],
+        schemes: ["http"],
       },
-      host: "localhost:4000",
-      basePath: "/",
-      produces: ["application/json"],
-      schemes: ["http"],
-    },
-    basedir: __dirname,
-    files: ["./routes/**/*.js", "./models/**/*.js"],
-  };
+      basedir: __dirname,
+      files: ["./routes/**/*.js", "./models/**/*.js"],
+    };
 
-  expressSwagger(options);
+    expressSwagger(options);
+  }
 
   // Enable CORS
   app.use(cors())
@@ -59,7 +61,7 @@ async function main() {
   app.use("/bills", bills);
 
   // Set up middleware to handle errors
-  app.use(function(err, req, res, next) {
+  app.use(function (err, req, res, next) {
     console.log(err.stack);
     res.status(500).send(err.message);
   });
